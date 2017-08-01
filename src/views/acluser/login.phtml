@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>谷仓管理平台 | 登陆 </title>
+
+    <!-- Bootstrap -->
+    <link href="/bower_components/gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="/bower_components/gentelella/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="/bower_components/gentelella/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="/bower_components/gentelella/vendors/animate.css/animate.min.css" rel="stylesheet">
+    <!-- bootstrap-wysiwyg -->
+    <link href="/bower_components/gentelella/vendors/google-code-prettify/bin/prettify.min.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
+    <link href="/css/thewbb.css" rel="stylesheet">
+</head>
+
+<body class="login">
+<?php $this->flashSession->output() ?>
+<div>
+    <div class="login_wrapper">
+        <div class="animate form login_form">
+            <section class="login_content">
+                <form id="demo-form2" data-parsley-validate action="#" method="post" >
+                    <h1>登陆</h1>
+                    <div>
+                        <input type="email" class="form-control" name="email" placeholder="电子邮箱" required=""  value="<?echo $_POST["email"]?>"/>
+                    </div>
+                    <div>
+                        <input type="password" class="form-control" name="password" placeholder="密码" data-parsley-minlength="[6, 32]" required  value="<?echo $_POST["password"]?>"/>
+                    </div>
+                    <div>
+                        <input type="checkbox" name="keep">保持登陆状态
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <input type="hidden" name="<?echo $this->security->getTokenKey() ?>" value="<?echo $this->security->getToken() ?>"/>
+                        <button class="btn btn-default btn-block submit" name="submit" value="login" type="submit">登陆</button>
+                        <a class="reset_pass" href="#">忘记密码?</a>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <div class="separator">
+                        <p class="change_link">
+                            <a href="/register" class="to_register"> 注册新用户 </a>
+                        </p>
+
+                        <div class="clearfix"></div>
+                        <br />
+
+                        <div>
+                            <h1><i class="fa fa-paw"></i> 谷仓管理平台</h1>
+                            <p>©2017 All Rights Reserved. 北京青禾谷仓科技有限公司 </p>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- jQuery -->
+<script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- Parsley -->
+<script src="/bower_components/gentelella/vendors/parsleyjs/dist/parsley.min.js"></script>
+<!-- Custom Theme Scripts -->
+<script src="/bower_components/gentelella/build/js/custom.js"></script>
+
+
+</body>
+</html>

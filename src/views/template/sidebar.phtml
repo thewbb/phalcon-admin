@@ -1,0 +1,35 @@
+<div class="col-md-3 left_col">
+    <div class="left_col scroll-view">
+        <div class="navbar nav_title" style="border: 0;">
+            <a href="/delivery/list" class="site_title"><img src="/img/logo.png" style="width: 40px;height: 40px;"> <span>谷仓管理平台</span></a>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <!-- menu profile quick info -->
+        <div class="profile clearfix">
+            <div class="profile_info" style="padding-top: 0;">
+                <span>Welcome,</span>
+                <h2><?echo $user["username"]?></h2>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+
+        <!-- sidebar menu -->
+        <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+            <div class="menu_section">
+                <ul class="nav side-menu">
+                    <?foreach($groups as $group){ ?>
+                        <li><a><i class="fa  fa-folder-o"></i> <?echo $group["name"]?> <span class="fa fa-chevron-down"></span></a>
+                            <ul class="nav child_menu">
+                                <?foreach($group["permissions"] as $permission){ ?>
+                                    <li><a href="<?echo $permission["uri"]?>"><?echo $permission["name"]?></a></li>
+                                <?}?>
+                            </ul>
+                        </li>
+                    <?}?>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

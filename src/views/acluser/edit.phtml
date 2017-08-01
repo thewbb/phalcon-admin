@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>谷仓管理平台 | <?echo $title;?></title>
+
+    <!-- Bootstrap -->
+    <link href="/bower_components/gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Switchery -->
+    <link href="/bower_components/gentelella/vendors/switchery/dist/switchery.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="/bower_components/gentelella/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="/bower_components/gentelella/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- jQuery custom content scroller -->
+    <link href="/bower_components/gentelella/vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet"/>
+    <!-- Custom Theme Style -->
+    <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
+</head>
+
+<body class="nav-md">
+<div class="container body">
+    <div class="main_container">
+        <?echo $sidebarTemplate?>
+
+        <?echo $headerTemplate?>
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>编辑<small></small></h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href="#">Settings 1</a>
+                                    </li>
+                                    <li><a href="#">Settings 2</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a class="close-link"><i class="fa fa-close"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <br>
+                        <form id="demo-form2" data-parsley-validate="" action="" class="form-horizontal form-label-left" novalidate="" method="post">
+                            <div class="row">
+                                <?foreach($fields as $key => $field){
+                                    switch($field["type"]){
+                                        case "file":?>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                    <?echo $field["label"]?>
+                                                </label>
+                                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                                    <div><?echo $field["data"]?></div>
+                                                    <div id="-<?echo $key?>" action="/file/upload" class="dropzone" style="margin-top: 8px;"></div>
+                                                    <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>">
+                                                </div>
+                                            </div>
+                                            <?break;
+                                        case "image":?>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                    <?echo $field["label"]?>
+                                                </label>
+                                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                                    <div><img id="show-<?echo $key?>" src="<?echo $field["data"]?>" style="max-width: 100%;"> </div>
+                                                    <div id="-<?echo $key?>" action="/file/upload" class="dropzone" style="margin-top: 8px;"></div>
+                                                    <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>">
+                                                </div>
+                                            </div>
+                                            <?break;
+                                        case "select":?>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                    <?echo $field["label"]?>
+                                                </label>
+                                                <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                                    <select class="form-control col-md-7 col-xs-12" name="post-<?echo $key?>">
+                                                        <?foreach($field["options"] as $key => $option){?>
+                                                            <option value="<?echo $key?>" <?echo $field["data"] == $key?"selected":""?>><?echo $option?></option>
+                                                        <?}?>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <?break;
+                                        case "boolean":?>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                    <?echo $field["label"]?>
+                                                </label>
+                                                <div class="col-md-6 col-sm-6 col-xs-12" style="padding-top: 5px;">
+                                                    <input type="checkbox" class="js-switch" id="post-<?echo $key?>" name="post-<?echo $key?>" <?echo $field["data"] == 1?"checked":""?> />
+                                                </div>
+                                            </div>
+                                            <?break;
+                                        default:?>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                    <?echo $field["label"]?>
+                                                </label>
+                                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                                    <input type="text" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>" required="required" class="form-control col-md-7 col-xs-12">
+                                                </div>
+                                            </div>
+                                        <?}
+                                }?>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2 col-sm-2">
+                                </div>
+                                <div class="col-md-2 col-sm-2">
+                                    <h2>所属用户组</h2>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8 col-sm-8 col-sm-offset-2">
+                                    <div class="ln_solid"></div>
+                                </div>
+                            </div>
+                            <?foreach($data as $row){?>
+                            <div class="row">
+                                <div class="col-md-2 col-sm-2">
+                                </div>
+                                <div class="col-md-2 col-sm-2">
+                                    <input type="checkbox" name="post-checkbox[]" value="<?echo $row["id"]?>" <?echo $row["granted"] == 1? "checked":"";?>>
+                                    <label><?echo $row["name"]?></label>
+                                </div>
+                            </div>
+                            <?}?>
+                            <div class="ln_solid"></div>
+                            <input type="hidden" name="id" value="<?echo $id?>">
+                            <input type="hidden" name="<?echo $this->security->getTokenKey() ?>" value="<?echo $this->security->getToken() ?>"/>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <a href="<?echo "/$controller/list"?>" class="btn btn-primary" type="button">取消</a>
+                                    <button type="submit" class="btn btn-success">修改</button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /page content -->
+        <?echo $footerTemplate?>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- Switchery -->
+<script src="/bower_components/gentelella/vendors/switchery/dist/switchery.min.js"></script>
+<!-- FastClick -->
+<script src="/bower_components/gentelella/vendors/fastclick/lib/fastclick.js"></script>
+<!-- NProgress -->
+<script src="/bower_components/gentelella/vendors/nprogress/nprogress.js"></script>
+<!-- jQuery custom content scroller -->
+<script src="/bower_components/gentelella/vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
+
+<script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
+<!-- Custom Theme Scripts -->
+<script src="/bower_components/gentelella/build/js/custom.min.js"></script>
+</body>
+</html>

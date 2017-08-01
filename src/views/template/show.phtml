@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>谷仓管理平台 | <?echo $title;?></title>
+
+    <!-- Bootstrap -->
+    <link href="/bower_components/gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="/bower_components/gentelella/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="/bower_components/gentelella/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- jQuery custom content scroller -->
+    <link href="/bower_components/gentelella/vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet"/>
+    <!-- Custom Theme Style -->
+    <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
+</head>
+
+<body class="nav-md" style="background-color: #F7F7F7;">
+<div class="container body">
+    <div class="main_container">
+        <?echo $current->sidebarTemplate()?>
+        <?echo $current->headerTemplate()?>
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>详情<small></small></h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href="#">Settings 1</a>
+                                    </li>
+                                    <li><a href="#">Settings 2</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a class="close-link"><i class="fa fa-close"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <br>
+                        <form id="demo-form2" data-parsley-validate="" action="" class="form-horizontal form-label-left" novalidate="" method="post">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>名称</th>
+                                    <th>数据</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?
+                                foreach($fields as $key => $value){
+                                    echo '<tr>
+                                         <th style="width:30%">'.$value["label"].'</th>';
+                                    switch($value["type"]){
+                                        case "select":
+                                            echo "<td>{$value["options"][$value["data"]]}</td>";
+                                        break;
+                                        default:
+                                            echo "<td>{$value["data"]}</td>";
+                                    }
+                                    echo '</tr>';
+                                }
+                                ?>
+                                </tbody>
+                            </table>
+
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-12 col-sm-12 col-xs-12">
+                                    <a href="<?echo "/$current->controller/list"?>" class="btn btn-primary" type="button">返回</a>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- FastClick -->
+<script src="/bower_components/gentelella/vendors/fastclick/lib/fastclick.js"></script>
+<!-- NProgress -->
+<script src="/bower_components/gentelella/vendors/nprogress/nprogress.js"></script>
+<!-- jQuery custom content scroller -->
+<script src="/bower_components/gentelella/vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
+
+<script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
+<!-- Custom Theme Scripts -->
+<script src="/bower_components/gentelella/build/js/custom.min.js"></script>
+</body>
+</html>

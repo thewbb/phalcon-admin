@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>谷仓管理平台 | 注册 </title>
+
+    <!-- Bootstrap -->
+    <link href="/bower_components/gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="/bower_components/gentelella/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="/bower_components/gentelella/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="/bower_components/gentelella/vendors/animate.css/animate.min.css" rel="stylesheet">
+    <!-- bootstrap-wysiwyg -->
+    <link href="/bower_components/gentelella/vendors/google-code-prettify/bin/prettify.min.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
+</head>
+
+<body class="login">
+<div>
+    <div class="login_wrapper">
+        <div id="animate form login_form">
+            <section class="login_content">
+                <form  id="demo-form2" data-parsley-validate action="#" method="post">
+                    <h1>注册</h1>
+                    <div>
+                        <div class="input-group">
+                            <input id="register_email" name="email" type="email" class="form-control" placeholder="电子邮件" required="required" value="<?echo $_POST["email"]?>">
+                        <span class="input-group-btn" style="vertical-align: top;">
+                            <button id="send_validate" type="button" class="btn btn-primary" style="margin-right: 0px;">发送验证码</button>
+                        </span>
+                        </div>
+                    </div>
+                    <div>
+                        <input name="validate" type="text" class="form-control" placeholder="验证码" required data-parsley-length="[4, 4]" value="<?echo $_POST["validate"]?>"/>
+                    </div>
+                    <div>
+                        <input name="password" type="password" class="form-control" placeholder="密码" required data-parsley-length="[6, 32]" value="<?echo $_POST["password"]?>"/>
+                    </div>
+                    <div>
+                        <input type="hidden" name="<?echo $this->security->getTokenKey() ?>" value="<?echo $this->security->getToken() ?>"/>
+                        <button class="btn btn-default btn-block submit" name="submit" value="register" type="submit">注册</button>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <div class="separator">
+                        <p class="change_link">
+                            <a href="/login" class="to_register">直接登录</a>
+                        </p>
+
+                        <div class="clearfix"></div>
+                        <br />
+
+                        <div>
+                            <h1><i class="fa fa-paw"></i> 谷仓管理平台</h1>
+                            <p>©2017 All Rights Reserved. 无锡青禾小贝科技有限公司 </p>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- jQuery -->
+<script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
+
+<script>
+    var timer;
+    var interval;
+    $(document).ready(function(){
+        $("#send_validate").click(function(){
+
+            interval = 3;
+            $("#send_validate").attr("disabled", true);
+            $("#send_validate").text(interval-- + "秒后重试");
+            timer = setInterval(function(){
+                if(interval <= 0){
+                    clearInterval(timer);
+                    $("#send_validate").text("发送验证码");
+                    $("#send_validate").attr("disabled", false);
+                }
+                else{
+                    $("#send_validate").text(interval-- + "秒后重试");
+                }
+            }, 1000);
+            var txt = $("#register_email").val();
+
+            $.post("/registerSendValidate", {email:txt, <?echo $this->security->getTokenKey() ?>: "<?echo $this->security->getToken() ?>"}, function(result){
+                alert(result.message);
+            });
+
+        });
+    });
+
+</script>
+<!-- Bootstrap -->
+<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- Parsley -->
+<script src="/bower_components/gentelella/vendors/parsleyjs/dist/parsley.min.js"></script>
+<!-- Custom Theme Scripts -->
+<script src="/bower_components/gentelella/build/js/custom.js"></script>
+
+<script src="/js/thewbb_alert.js"></script>
+
+
+</body>
+</html>
