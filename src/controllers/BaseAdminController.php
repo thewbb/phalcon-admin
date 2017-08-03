@@ -90,7 +90,7 @@ class BaseAdminController extends ControllerBase
         $sql = $sqlCount." ".$where;
         $recordCount = $this->fetchColumn($sql);
 
-        $pageCount = floor($recordCount / $perPage);
+        $pageCount = ceil($recordCount / $perPage);
         $sql = "$sqlMain $where order by $sortBy $sortOrder limit $perPage offset ".(($page - 1) * $perPage);
         $records = $this->fetchAll($sql);
 
