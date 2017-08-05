@@ -21,27 +21,35 @@ class AcluserController extends BaseAdminController
         $this->view->pick($template);
 
         if ($this->request->isPost()) {
+            $email = $this->getPost("email");
+            $password = $this->getPost("password");
+            $validate = $this->getPost("validate");
+
             if (!$this->security->checkToken()) {
                 return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
             }
             if(empty($email)){
                 $this->flashSession->error("邮箱不能为空");
-                header("location:/admin/register");
+                header("location:/register");
                 exit();
             }
             if(empty($password)){
                 $this->flashSession->error("密码不能为空");
-                header("location:/admin/register");
+                header("location:/register");
                 exit();
             }
             if(empty($validate)){
                 $this->flashSession->error("验证码不能为空");
-                header("location:/admin/register");
+                header("location:/register");
                 exit();
             }
-            $email = $this->getPost("email");
-            $password = $this->getPost("password");
-            $validate = $this->getPost("validate");
+
+            $sql = "select * from acl_user where username = '$email'";
+            $user = $this->fetchOne($sql);
+            if($user){
+                $this->flashSession->error("用户已存在");
+                return;
+            }
 
             $salt = uniqid();
             if($this->redis->get("validate-$email") == $validate){
@@ -51,8 +59,13 @@ class AcluserController extends BaseAdminController
                     "password" => sha1($password.$salt),
                     "salt" => $salt,
                 ));
-                header("location:/admin/dashboard");
+                $this->flashSession->success("恭喜您！注册成功，请让管理员开通权限后登陆！");
+                header("location:/login");
                 exit();
+            }
+            else{
+                $this->flashSession->error("验证码错误");
+                return;
             }
         }
     }
