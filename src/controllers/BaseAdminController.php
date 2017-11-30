@@ -44,6 +44,7 @@ class BaseAdminController extends ControllerBase
         $searchParam = "";
         $leftJoin = "";
         $leftJoinField = "";
+
         foreach($search_fields as $key => &$field){
             switch($field['type']){
                 case 'datetime_range':
@@ -77,9 +78,12 @@ class BaseAdminController extends ControllerBase
                     // 判断左联接的参数是否存在
                     if(empty($field['refer'])){throw new Exception("many_to_one need refer.");}
                     if(empty($field['field'])){throw new Exception("many_to_one need field.");}
+                    $field['data'] = $this->getQuery('search_'.str_replace(".", "_", $key), $field['data']);
+                    $searchParam .= '&search_'.$key."=".$field['data'];
                     list($joinTable, $joinField) = explode(".", $key);
-                    $leftJoin .= " left join $joinTable on $this->tableName.{$field['field']} = $joinTable.{$field['refer']} ";
-                    $leftJoinField .= ", $joinTable.$joinField as {$joinTable}__$joinField ";
+                    if(!empty($field['data'])){
+                        $where .= " and $joinTable.$joinField like '%{$field["data"]}%'";
+                    }
                     break;
                 default:
                     $field['data'] = $this->getQuery('search_'.$key, $field['data']);
@@ -90,9 +94,22 @@ class BaseAdminController extends ControllerBase
             }
         }
 
+        foreach($fields as $key => &$field){
+            switch($field['type']){
+                case 'many_to_one':
+                    // 判断左联接的参数是否存在
+                    if(empty($field['refer'])){throw new Exception("many_to_one need refer.");}
+                    if(empty($field['field'])){throw new Exception("many_to_one need field.");}
+                    list($joinTable, $joinField) = explode(".", $key);
+                    $leftJoin .= " left join $joinTable on $this->tableName.{$field['field']} = $joinTable.{$field['refer']} ";
+                    $leftJoinField .= ", $joinTable.$joinField as {$joinTable}__$joinField ";
+                    break;
+            }
+        }
+
         // 如果listAction没有设置sqlCount语句，那么使用默认sqlCount语句来计算数据条数
         if(empty($sqlCount)){
-            $sqlCount = "select count(*) from $this->tableName where 1 ";
+            $sqlCount = "select count(*) from $this->tableName $leftJoin where 1 ";
         }
 
         // 如果listAction没有设置sqlMain语句，那么使用默认sqlMain语句来计算数据条数
@@ -109,7 +126,6 @@ class BaseAdminController extends ControllerBase
         $sql = "$sqlMain $where order by $sortBy $sortOrder limit $perPage offset ".(($page - 1) * $perPage);
         $records = $this->fetchAll($sql);
 
-        //
         //$this->redis->setex($this->controller."-".$this->action."-sql", 7200, "$sqlMain $where order by $sortBy $sortOrder");
 
         // 如果list action里面没有设置field参数，那么默认显示表中的所有字段
