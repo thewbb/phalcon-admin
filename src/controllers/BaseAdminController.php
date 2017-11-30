@@ -42,6 +42,8 @@ class BaseAdminController extends ControllerBase
 
         $where = "";
         $searchParam = "";
+        $leftJoin = "";
+        $leftJoinField = "";
         foreach($search_fields as $key => &$field){
             switch($field['type']){
                 case 'datetime_range':
@@ -50,10 +52,10 @@ class BaseAdminController extends ControllerBase
                     $searchParam .= "&search_{$key}_begin=".$field['datetime_begin'];
                     $searchParam .= "&search_{$key}_end=".$field['datetime_end'];
                     if(!empty($field['datetime_begin'])){
-                        $where .= " and $key > '{$field['datetime_begin']}'";
+                        $where .= " and $this->tableName.$key > '{$field['datetime_begin']}'";
                     }
                     if(!empty($field['datetime_end'])){
-                        $where .= " and $key < '{$field['datetime_end']}'";
+                        $where .= " and $this->tableName.$key < '{$field['datetime_end']}'";
                     }
                     break;
                 case 'select':
@@ -61,41 +63,56 @@ class BaseAdminController extends ControllerBase
                     $searchParam .= '&search_'.$key."=".$field['data'];
                     if(isset($field['data'])){
                         if($field['data'] == "0"){
-                            $where .= " and $key = 0";
+                            $where .= " and $this->tableName.$key = 0";
                         }
                         else if($field['data'] == "1"){
-                            $where .= " and $key = 1";
+                            $where .= " and $this->tableName.$key = 1";
                         }
                         else{
                             // select both
                         }
                     }
                     break;
+                case 'many_to_one':
+                    // 判断左联接的参数是否存在
+                    if(empty($field['refer'])){throw new Exception("many_to_one need refer.");}
+                    if(empty($field['field'])){throw new Exception("many_to_one need field.");}
+                    list($joinTable, $joinField) = explode(".", $key);
+                    $leftJoin .= " left join $joinTable on $this->tableName.{$field['field']} = $joinTable.{$field['refer']} ";
+                    $leftJoinField .= ", $joinTable.$joinField as {$joinTable}__$joinField ";
+                    break;
                 default:
                     $field['data'] = $this->getQuery('search_'.$key, $field['data']);
                     $searchParam .= '&search_'.$key."=".$field['data'];
                     if(!empty($field['data'])){
-                        $where .= " and $key like '%{$field["data"]}%'";
+                        $where .= " and $this->tableName.$key like '%{$field["data"]}%'";
                     }
             }
         }
+
+        // 如果listAction没有设置sqlCount语句，那么使用默认sqlCount语句来计算数据条数
         if(empty($sqlCount)){
             $sqlCount = "select count(*) from $this->tableName where 1 ";
         }
 
+        // 如果listAction没有设置sqlMain语句，那么使用默认sqlMain语句来计算数据条数
         if(empty($sqlMain)){
-            $sqlMain = "select * from $this->tableName where 1 ";
+            $sqlMain = "select $this->tableName.* $leftJoinField from $this->tableName $leftJoin where 1 ";
         }
 
+        // 将右侧的搜索窗口的搜索条件拼接到sql语句的where条件中，再计算筛选后的数据条数
         $sql = $sqlCount." ".$where;
         $recordCount = $this->fetchColumn($sql);
 
+        // 根据数据条数和每页显示的数据量，来计算页数
         $pageCount = ceil($recordCount / $perPage);
         $sql = "$sqlMain $where order by $sortBy $sortOrder limit $perPage offset ".(($page - 1) * $perPage);
         $records = $this->fetchAll($sql);
 
-        $this->redis->setex($this->controller."-".$this->action."-sql", 7200, "$sqlMain $where order by $sortBy $sortOrder");
+        //
+        //$this->redis->setex($this->controller."-".$this->action."-sql", 7200, "$sqlMain $where order by $sortBy $sortOrder");
 
+        // 如果list action里面没有设置field参数，那么默认显示表中的所有字段
         if(empty($fields)){
             $database_name = $this->database->dbname;
             $records = $this->fetchAll("select COLUMN_NAME from information_schema.COLUMNS where table_name = '$this->tableName' and table_schema = '$database_name'");
@@ -104,10 +121,11 @@ class BaseAdminController extends ControllerBase
             }
 
             foreach($records as $field){
-                $fields[] = [];
+                $fields[] = $field;
             }
         }
 
+        $this->session->set("HTTP_REFERER", $_SERVER["HTTP_REFERER"]);
         $this->view->pick($template);
         $this->view->setVars(array(
             "current" => $this,
@@ -140,7 +158,18 @@ class BaseAdminController extends ControllerBase
         }
         else{
             foreach($fields as $key => &$value){
-                $value["data"] = $record[$key];
+                switch($value["type"]){
+                    case "many_to_one":
+                        // 从对应的表中取值
+                        // 从字段中取出表名和字段名
+                        list($table_name, $field_name) = explode(".", $key);
+                        $sql = "select * from $table_name where {$value["refer"]} = '{$record[$value["field"]]}'";
+                        $row = $this->fetchOne($sql, 1000);
+                        $value["data"] = $row[$field_name];
+                        break;
+                    default:
+                        $value["data"] = $record[$key];
+                }
             }
         }
 
@@ -164,9 +193,15 @@ class BaseAdminController extends ControllerBase
 
             $params = [];
             foreach($fields as $key => $field){
-                $param = $this->getPost("post-".$key);
+                $param = $this->getPost("post-".str_replace(".", "_", $key));
                 if(!empty($param)){
-                    $params[$key] = $param;
+                    switch($field["type"]){
+                        case "many_to_one":
+                            $params[$field["field"]] = $param;
+                            break;
+                        default:
+                            $params[$key] = $param;
+                    }
                 }
             }
 
@@ -183,8 +218,8 @@ class BaseAdminController extends ControllerBase
 
             $this->view->setVars(array(
                 "current" => $this,
-                "fields" => $fields,
                 "title" => "添加",
+                "fields" => $fields,
             ));
         }
     }
@@ -213,24 +248,17 @@ class BaseAdminController extends ControllerBase
             $params = [];
 
             foreach($fields as $key => $field){
-                $param = $this->getPost("post-".$key);
-                if(isset($param)){
-                    if(empty($param)){
-                        $params[$key] = null;
-                    }
-                    else{
+                $param = $this->getPost("post-".str_replace(".", "_", $key));
+
+                switch($field["type"]){
+                    case "many_to_one":
+                        $params[$field["field"]] = $param;
+                        break;
+                    case "boolean":
+                        $params[$key] = ($param == "on"? 1:0);
+                        break;
+                    default:
                         $params[$key] = $param;
-                    }
-                }
-            }
-            foreach($fields as $k => $v){
-                if($v["type"] == "boolean"){
-                    if($params[$k] == "on"){
-                        $params[$k] = 1;
-                    }
-                    else{
-                        $params[$k] = 0;
-                    }
                 }
             }
 
@@ -247,7 +275,14 @@ class BaseAdminController extends ControllerBase
             }
 
             foreach($fields as $key => &$field){
-                $field["data"] = $record[$key];
+                if($field["type"] == "many_to_one"){
+                    list($table_name, $table_field) = explode(".", $key);
+                    $sql = "select $table_field from $table_name where {$field["refer"]} = '{$record[$field["field"]]}'";
+                    $field["data"] = $this->fetchColumn($sql);
+                }
+                else{
+                    $field["data"] = $record[$key];
+                }
             }
 
             $this->view->setVars(array(

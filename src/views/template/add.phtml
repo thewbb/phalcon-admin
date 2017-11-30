@@ -37,27 +37,12 @@
                 <div class="x_panel">
                     <div class="x_title">
                         <h2>新建<small></small></h2>
-                        <ul class="nav navbar-right panel_toolbox">
-                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                                <ul class="dropdown-menu" role="menu">
-                                    <li><a href="#">Settings 1</a>
-                                    </li>
-                                    <li><a href="#">Settings 2</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li><a class="close-link"><i class="fa fa-close"></i></a>
-                            </li>
-                        </ul>
+
                         <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
                         <br>
                         <form id="demo-form2" data-parsley-validate="" action="" class="form-horizontal form-label-left" novalidate="" method="post">
-
                             <?foreach($fields as $key => $field){
                                 switch($field["type"]){
                                     case "file":?>
@@ -97,6 +82,27 @@
                                             </div>
                                         </div>
                                         <?break;
+                                    case "many_to_one":?>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                <?echo $field["label"]?>
+                                            </label>
+                                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                                <div style="float: left;">
+                                                    <input class="form-control" style="height: 32px;" type="text" id="post-<?echo $key?>-data" name="post-<?echo $key?>-data" readonly value="">
+                                                    <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="">
+                                                    <input type="hidden" id="post-<?echo $key?>-refer" name="post-<?echo $key?>-refer" value="<?echo $field["id"]?>">
+                                                    <input type="hidden" id="post-<?echo $key?>-show" name="post-<?echo $key?>-show" value="<?list($none, $field_name) = explode(".", $key);echo $field_name;?>">
+                                                </div>
+                                                <div style="float: left;">
+                                                    <a id="post-<?echo $key?>-remove" class="glyphicon glyphicon-remove btn remove_many_to_one"style="pointer-events: auto; margin-top: -2px;"></a>
+                                                    <button id="post-<?echo $key?>" name="post-<?echo $key?>" style="height: 32px;margin-left: 16px;" class="btn btn-default many_to_one">选择</button>
+
+                                                    <input type="hidden" id="post-<?echo $key?>-url" value="<?echo $field["url"]?>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?break;
                                     default:?>
                                         <div class="form-group">
                                             <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
@@ -127,7 +133,10 @@
         <?echo $footerTemplate?>
     </div>
 </div>
-
+<div id="show_mask_parent" style="z-index: 999;position: fixed; display: none;width: 90%;height: 90%;top: 5%;left: 5%;">
+    <img id="child-close" src="/img/close.png" style="position: fixed;top: 7%;right: 8%;width: 32px;height: 32px;">
+    <div  id="show_mask" style="width: 100%;height: 100%;"></div>
+</div>
 <!-- jQuery -->
 <script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
 <!-- Dropzone.js -->
@@ -136,16 +145,47 @@
 <script>
     Dropzone.autoDiscover = false;
 
-        $(".dropzone").each(function(){
-            var id = $(this).attr("id");
-            $(this).dropzone({
-                url: "/file/uploadReturnUrl",
-                maxFiles: 1,
-                success : function(file, response){
-                    $("#post"+id).val(response);
-                }
-            });
+    $(".dropzone").each(function(){
+        var id = $(this).attr("id");
+        $(this).dropzone({
+            url: "/file/uploadReturnUrl",
+            maxFiles: 1,
+            success : function(file, response){
+                $("#post"+id).val(response);
+            }
         });
+    });
+
+    $(".many_to_one").click(function(event){
+        var id = $(this).attr("id");
+        var url_id = "#" + id + "-url";
+        var show_id = "#" + id + "-show";
+
+        var url = $(url_id.replace("\.", "\\\.")).val();
+        var show = $(show_id.replace("\.", "\\\.")).val();
+
+        url += "&key="+id+"&data="+id+"-data&show=" + show;
+        console.log(url);
+        $("#show_mask").html('<iframe style="width: 100%; height: 100%;" src="' + url + '"></iframe>');
+        $("#show_mask_parent").css("display", "block");
+        $("#child-close").css("display", "block");
+        event.preventDefault();
+    });
+
+    $(".remove_many_to_one").click(function(event){
+        var id = $(this).attr("id").replace("-remove", "");
+        var data_id = id + "-data";
+        $("#" + id.replace("\.", "\\\.")).attr("value", "");
+        $("#" + data_id.replace("\.", "\\\.")).attr("value", "");
+        event.preventDefault();
+    });
+
+    $("#child-close").click(function(event){
+        $("#show_mask").html('');
+        $("#show_mask_parent").css("display", "none");
+        $("#child-close").css("display", "none");
+    });
+
 </script>
 <!-- Bootstrap -->
 <script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>

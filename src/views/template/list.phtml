@@ -28,32 +28,24 @@
 <body class="nav-md" style="background-color: #F7F7F7;">
 <div class="container body">
     <div class="main_container">
-    <?echo $current->sidebarTemplate()?>
-    <?echo $current->headerTemplate()?>
-
+    <?
+    if($_GET["model"] == 1){
+        $marginLeft = "margin-left:0;";
+    }
+    else{
+        echo $current->sidebarTemplate();
+        echo $current->headerTemplate();
+    }
+    ?>
         <!-- page content -->
-        <div class="right_col" role="main">
+        <div class="right_col" style="<?echo $marginLeft?>" role="main">
             <div class="col-md-10 col-sm-10 col-xs-12"  style="padding-left: 0;">
                 <div class="x_panel">
                     <div class="x_title">
                         <h2>列表<small></small>&nbsp;&nbsp;&nbsp;</h2>
                         <div style="width: 2px; height: 30px; background-color: #00243F;float: left;"></div>&nbsp;
                         <a href="/<?echo $current->controller?>/add" class="btn btn-primary btn-sm"><i class='fa fa-plus'></i>&nbsp;添加</a>
-                        <ul class="nav navbar-right panel_toolbox">
-                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                                <ul class="dropdown-menu" role="menu">
-                                    <li><a href="#">Settings 1</a>
-                                    </li>
-                                    <li><a href="#">Settings 2</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li><a class="close-link"><i class="fa fa-close"></i></a>
-                            </li>
-                        </ul>
+
                         <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
@@ -113,27 +105,33 @@
                                                     echo $field["options"][$row[$key]];
                                                     break;
                                                 case "actions":
-                                                    foreach($field["actions"] as $actionKey => $params){
-                                                        if(!empty($params["link_field"])){
-                                                            $url = $row[$params["link_field"]];
-                                                        }
-                                                        else{
-                                                            $url = "/$current->controller/$actionKey?id={$row["id"]}";
-                                                        }
-
-                                                        switch($actionKey){
-                                                            case "show";
-                                                                echo "<a class='btn btn-primary btn-xs btn-show' href='$url'><i class='fa fa-folder'></i>&nbsp;{$params["label"]}</a>";
-                                                                break;
-                                                            case "edit";
-                                                                echo "<a class='btn btn-info btn-xs btn-edit' href='$url'><i class='fa fa-pencil''></i>&nbsp;{$params["label"]}</a>";
-                                                                break;
-                                                            case "remove";
-                                                                echo "<a class='btn btn-danger btn-xs btn-remove' href='$url'><i class='fa fa-trash-o'></i>&nbsp;{$params["label"]}</a>";
-                                                                break;
-                                                            default:
-                                                                $url = empty($params["url"])?$url:($params["url"].$row["id"]);
-                                                                echo "<a class='btn btn-default btn-xs' href='$url'>{$params["label"]}</a>";
+                                                    if($_GET["model"] == 1){
+                                                        $selected_key = $row["id"];
+                                                        $selected_value = $row[$_GET["show"]];
+                                                        echo "<a class='btn btn-default btn-xs btn-select' href='$url' value='{$selected_key}-{$selected_value}'><i class='fa fa-hand-o-up'></i>&nbsp;选择</a>";
+                                                    }
+                                                    else{
+                                                        foreach($field["actions"] as $actionKey => $params){
+                                                            if(!empty($params["link_field"])){
+                                                                $url = $row[$params["link_field"]];
+                                                            }
+                                                            else{
+                                                                $url = "/$current->controller/$actionKey?id={$row["id"]}";
+                                                            }
+                                                            switch($actionKey){
+                                                                case "show";
+                                                                    echo "<a class='btn btn-primary btn-xs btn-show' href='$url'><i class='fa fa-folder'></i>&nbsp;{$params["label"]}</a>";
+                                                                    break;
+                                                                case "edit";
+                                                                    echo "<a class='btn btn-info btn-xs btn-edit' href='$url'><i class='fa fa-pencil''></i>&nbsp;{$params["label"]}</a>";
+                                                                    break;
+                                                                case "remove";
+                                                                    echo "<a class='btn btn-danger btn-xs btn-remove' href='$url'><i class='fa fa-trash-o'></i>&nbsp;{$params["label"]}</a>";
+                                                                    break;
+                                                                default:
+                                                                    $url = empty($params["url"])?$url:($params["url"].$row["id"]);
+                                                                    echo "<a class='btn btn-default btn-xs' href='$url'>{$params["label"]}</a>";
+                                                            }
                                                         }
                                                     }
                                                     break;
@@ -163,6 +161,10 @@
                                                     break;
                                                 case "num":
                                                     echo number_format($row[$key]);
+                                                    break;
+                                                case "many_to_one":
+                                                    list($table_name, $table_field) = explode(".", $key);
+                                                    echo $row[$table_name."__".$table_field];
                                                     break;
                                                 default:
                                                     echo $row[$key];
@@ -258,7 +260,6 @@
                             <?foreach($searchFields as $key => $field){
                                 switch($field['type']){
                                 case 'select':?>
-
                                     <div class="form-group">
                                         <?echo $field['label']?>
                                         <select class="form-control col-md-7 col-xs-12" name="search_<?echo $key?>">
@@ -268,9 +269,7 @@
                                             <?}?>
                                         </select>
                                     </div>
-
-                                <?break;
-
+                                    <?break;
                                 case 'datetime_range':?>
                                     <div class="form-group">
                                         <?echo $field['label']?>开始时间
@@ -280,9 +279,6 @@
                                         <?echo $field['label']?>结束时间
                                         <input type="text" name="search_<?echo $key?>_end" id="search_<?echo $key?>_end" class="form-control datetime" value="<?echo $field['datetime_end']?>" />
                                     </div>
-                                    <script type="text/javascript">
-
-                                    </script>
                                     <?break;
                                     default:
                                         echo '
@@ -294,8 +290,13 @@
                                 }
                             }?>
                             <div class="ln_solid"></div>
+                            <input type="hidden" name="model" value="<?echo $_GET["model"]?>">
+                            <input type="hidden" name="post-key" value="<?echo $_GET["key"]?>">
+                            <input type="hidden" name="post-data" value="<?echo $_GET["data"]?>">
                             <div class="form-group" style="text-align: center;">
-                                <a href="<?echo "/$current->controller/$current->action"?>" class="btn btn-primary" type="reset">重置</a>
+                                <?if($_GET["model"] != 1){?>
+                                    <a href="<?echo "/$current->controller/$current->action"?>" class="btn btn-primary" type="reset">重置</a>
+                                <?}?>
                                 <button type="submit" class="btn btn-success">搜索</button>
                             </div>
                         </form>
@@ -334,6 +335,22 @@
         });
         return false;
     });
+
+    $(".btn-select").click(function(event){
+        var values = $(this).attr("value").split("-");
+        var key = ("#<?echo $_GET["key"]?>").replace("\.", "\\\.");
+        var data = ("#<?echo $_GET["data"]?>").replace("\.", "\\\.");
+console.log(values);
+        $(key, parent.document).attr("value", values[0]);
+        $(data, parent.document).attr("value", values[1]);
+
+        event.preventDefault();
+
+        $("#show_mask_parent", parent.document).css("display", "none");
+        $("#child-close", parent.document).css("display", "none");
+
+    });
+
 </script>
 <!-- Bootstrap -->
 <script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>

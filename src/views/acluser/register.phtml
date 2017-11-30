@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>谷仓管理平台 | 注册 </title>
+    <title>须眉管理平台 | 注册 </title>
 
     <!-- Bootstrap -->
     <link href="/bower_components/gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,9 +21,11 @@
     <link href="/bower_components/gentelella/vendors/google-code-prettify/bin/prettify.min.css" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
+    <link href="/css/thewbb.css" rel="stylesheet">
 </head>
 
 <body class="login">
+<?php $this->flashSession->output() ?>
 <div>
     <div class="login_wrapper">
         <div id="animate form login_form">
@@ -60,8 +62,8 @@
                         <br />
 
                         <div>
-                            <h1><i class="fa fa-paw"></i> 谷仓管理平台</h1>
-                            <p>©2017 All Rights Reserved. 无锡青禾小贝科技有限公司 </p>
+                            <h1><i class="fa fa-paw"></i> 须眉管理平台</h1>
+                            <p>©2017 All Rights Reserved. 天津须眉科技有限公司 </p>
                         </div>
                     </div>
                 </form>
@@ -97,6 +99,7 @@
             var txt = $("#register_email").val();
 
             $.post("/registerSendValidate", {email:txt, <?echo $this->security->getTokenKey() ?>: "<?echo $this->security->getToken() ?>"}, function(result){
+                console.log(result);
                 alert(result.message);
             });
 
