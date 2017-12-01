@@ -1,7 +1,4 @@
 <?php
-
-ini_set('display_errors',1);
-error_reporting(E_ALL || ~E_NOTICE);
 class BaseAdminController extends ControllerBase
 {
     public $tableName = "";
@@ -228,6 +225,7 @@ class BaseAdminController extends ControllerBase
         else{
             $database_name = $this->database->dbname;
             $records = $this->fetchAll("select * from information_schema.COLUMNS where table_name = '$this->tableName' and table_schema = '$database_name'");
+
             if(empty($records)){
                 throw new Exception("table not exist");
             }
@@ -293,8 +291,10 @@ class BaseAdminController extends ControllerBase
             foreach($fields as $key => &$field){
                 if($field["type"] == "many_to_one"){
                     list($table_name, $table_field) = explode(".", $key);
-                    $sql = "select $table_field from $table_name where {$field["refer"]} = '{$record[$field["field"]]}'";
-                    $field["data"] = $this->fetchColumn($sql);
+                    $data = $record[$field["field"]];
+                    $sql = "select $table_field from $table_name where {$field["refer"]} = '$data'";
+                    $field["show"] = $this->fetchColumn($sql);
+                    $field["data"] = $data;
                 }
                 else{
                     $field["data"] = $record[$key];

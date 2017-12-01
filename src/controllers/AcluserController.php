@@ -1,5 +1,4 @@
 <?php
-
 use Phalcon\Mvc\View;
 
 use Phalcon\Validation;

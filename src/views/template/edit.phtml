@@ -23,6 +23,8 @@
     <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
     <!-- Dropzone.js -->
     <link href="/bower_components/gentelella/vendors/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
+
+    <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
 </head>
 
 <body class="nav-md">
@@ -106,8 +108,9 @@
                                             </label>
                                             <div class="col-md-6 col-sm-6 col-xs-12">
                                                 <div style="float: left;">
-                                                    <input class="form-control" style="height: 32px;" type="text" id="post-<?echo $key?>-data" name="post-<?echo $key?>-data" readonly value="<?echo $field["data"]?>">
-                                                    <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="">
+                                                    <input class="form-control" style="height: 32px;" type="text" id="post-<?echo $key?>-data"
+                                                           name="post-<?echo $key?>-data" readonly value="<?echo $field["show"]?>">
+                                                    <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>">
                                                     <input type="hidden" id="post-<?echo $key?>-refer" name="post-<?echo $key?>-refer" value="<?echo $field["id"]?>">
                                                     <input type="hidden" id="post-<?echo $key?>-show" name="post-<?echo $key?>-show" value="<?list($none, $field_name) = explode(".", $key);echo $field_name;?>">
                                                 </div>
@@ -117,6 +120,9 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <?break;
+                                    case "hidden":?>
+                                        <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>" required="required" class="form-control col-md-7 col-xs-12">
                                         <?break;
                                     case "boolean":?>
                                         <div class="form-group">
@@ -166,8 +172,25 @@
 <script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
 <!-- Dropzone.js -->
 <script src="/bower_components/gentelella/vendors/dropzone/dist/min/dropzone.min.js"></script>
+<!-- Bootstrap -->
+<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- Switchery -->
+<script src="/bower_components/gentelella/vendors/switchery/dist/switchery.min.js"></script>
+<!-- FastClick -->
+<script src="/bower_components/gentelella/vendors/fastclick/lib/fastclick.js"></script>
+<!-- NProgress -->
+<script src="/bower_components/gentelella/vendors/nprogress/nprogress.js"></script>
+
+<script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
+<!-- Custom Theme Scripts -->
+<script src="/bower_components/gentelella/build/js/custom.min.js"></script>
+
+<script src="/bower_components/moment/min/moment-with-locales.min.js"></script>
+
+<script src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 <script>
     Dropzone.autoDiscover = false;
+    $(".datetime").datetimepicker({format:'YYYY-MM-DD HH:mm', locale:'zh-cn'});
 
     $(".dropzone").each(function(){
         var id = $(this).attr("id");
@@ -203,17 +226,6 @@
         $("#child-close").css("display", "none");
     });
 </script>
-<!-- Bootstrap -->
-<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
-<!-- Switchery -->
-<script src="/bower_components/gentelella/vendors/switchery/dist/switchery.min.js"></script>
-<!-- FastClick -->
-<script src="/bower_components/gentelella/vendors/fastclick/lib/fastclick.js"></script>
-<!-- NProgress -->
-<script src="/bower_components/gentelella/vendors/nprogress/nprogress.js"></script>
 
-<script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
-<!-- Custom Theme Scripts -->
-<script src="/bower_components/gentelella/build/js/custom.min.js"></script>
 </body>
 </html>

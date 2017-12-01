@@ -23,6 +23,8 @@
     <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
     <!-- Dropzone.js -->
     <link href="/bower_components/gentelella/vendors/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
+
+    <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
 </head>
 
 <body class="nav-md">
@@ -40,7 +42,7 @@
 
                         <div class="clearfix"></div>
                     </div>
-                    <div class="x_content">
+                    <div class="x_content" >
                         <br>
                         <form id="demo-form2" data-parsley-validate="" action="" class="form-horizontal form-label-left" novalidate="" method="post">
                             <?foreach($fields as $key => $field){
@@ -97,11 +99,24 @@
                                                 <div style="float: left;">
                                                     <a id="post-<?echo $key?>-remove" class="glyphicon glyphicon-remove btn remove_many_to_one"style="pointer-events: auto; margin-top: -2px;"></a>
                                                     <button id="post-<?echo $key?>" name="post-<?echo $key?>" style="height: 32px;margin-left: 16px;" class="btn btn-default many_to_one">选择</button>
-
                                                     <input type="hidden" id="post-<?echo $key?>-url" value="<?echo $field["url"]?>">
                                                 </div>
                                             </div>
                                         </div>
+                                        <?break;
+                                    case "datetime":?>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                <?echo $field["label"]?>
+                                            </label>
+                                            <div class="col-md-6 col-sm-6 col-xs-12" style="padding-top: 5px;">
+                                                <input type="text" name="post-<?echo $key?>" id="post-<?echo $key?>" class="form-control datetime" value="<?echo $field['data']?>"/>
+
+                                            </div>
+                                        </div>
+                                        <?break;
+                                    case "hidden":?>
+                                        <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>" required="required" class="form-control col-md-7 col-xs-12">
                                         <?break;
                                     default:?>
                                         <div class="form-group">
@@ -141,9 +156,27 @@
 <script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
 <!-- Dropzone.js -->
 <script src="/bower_components/gentelella/vendors/dropzone/dist/min/dropzone.min.js"></script>
+<!-- Bootstrap -->
+<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- Switchery -->
+<script src="/bower_components/gentelella/vendors/switchery/dist/switchery.min.js"></script>
+<!-- FastClick -->
+<script src="/bower_components/gentelella/vendors/fastclick/lib/fastclick.js"></script>
+<!-- NProgress -->
+<script src="/bower_components/gentelella/vendors/nprogress/nprogress.js"></script>
+<!-- jQuery custom content scroller -->
+<script src="/bower_components/gentelella/vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
 
+<script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
+<!-- Custom Theme Scripts -->
+<script src="/bower_components/gentelella/build/js/custom.min.js"></script>
+
+<script src="/bower_components/moment/min/moment-with-locales.min.js"></script>
+
+<script src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 <script>
     Dropzone.autoDiscover = false;
+    $(".datetime").datetimepicker({format:'YYYY-MM-DD HH:mm', locale:'zh-cn'});
 
     $(".dropzone").each(function(){
         var id = $(this).attr("id");
@@ -187,19 +220,6 @@
     });
 
 </script>
-<!-- Bootstrap -->
-<script src="/bower_components/gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
-<!-- Switchery -->
-<script src="/bower_components/gentelella/vendors/switchery/dist/switchery.min.js"></script>
-<!-- FastClick -->
-<script src="/bower_components/gentelella/vendors/fastclick/lib/fastclick.js"></script>
-<!-- NProgress -->
-<script src="/bower_components/gentelella/vendors/nprogress/nprogress.js"></script>
-<!-- jQuery custom content scroller -->
-<script src="/bower_components/gentelella/vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js"></script>
 
-<script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
-<!-- Custom Theme Scripts -->
-<script src="/bower_components/gentelella/build/js/custom.min.js"></script>
 </body>
 </html>
