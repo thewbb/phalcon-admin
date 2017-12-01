@@ -200,9 +200,9 @@ class BaseAdminController extends ControllerBase
         $this->view->pick($template);
         if($this->request->isPost()){
             // check csrf attack
-            if (!$this->security->checkToken()) {
-                return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
-            }
+//            if (!$this->security->checkToken()) {
+//                return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
+//            }
 
             $params = [];
             foreach($fields as $key => $field){
@@ -214,6 +214,10 @@ class BaseAdminController extends ControllerBase
                             break;
                         default:
                             $params[$key] = $param;
+                    }
+                    if(isset($field["pre_post"])){
+                        // 提交前的修改参数，根据用户传递进来的函数参数，在提交到数据库里之前修改这个值
+                        $params[$key] = call_user_func([$this, $field["pre_post"]], $params[$key]);
                     }
                 }
             }
