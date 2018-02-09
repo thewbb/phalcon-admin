@@ -370,18 +370,25 @@ class AcluserController extends BaseAdminController
                 "is_valid" => empty($is_valid)?0:1,
                 "is_super_admin" => empty($is_super_admin)?0:1,
             );
+
             if(empty($password)){
                 unset($params["password"]);
             }
-            $this->update("acl_user", $params, "id = $id");
-
-            $sql = "delete from acl_group_has_user where user_id = $id";
-            $this->execute($sql);
-            foreach($_POST['post-checkbox'] as $group_id)
-            {
-                $this->insert("acl_group_has_user", array("group_id" => $group_id, "user_id" => $id));
+            $result = $this->update("acl_user", $params, "id = $id");
+            if($result){
+                $sql = "delete from acl_group_has_user where user_id = $id";
+                $this->execute($sql);
+                foreach($_POST['post-checkbox'] as $group_id)
+                {
+                    $this->insert("acl_group_has_user", array("group_id" => $group_id, "user_id" => $id));
+                }
+                $this->flashSession->success("修改成功");
             }
-            $this->flashSession->success("修改成功");
+            {
+                // 修改失败
+            }
+
+
             header("location: /".$this->controller."/list");
         }
         else{

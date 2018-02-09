@@ -21,8 +21,11 @@
     <link href="/bower_components/gentelella/vendors/switchery/dist/switchery.min.css" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
+
     <link href="/bower_components/jquery-confirm2/dist/jquery-confirm.min.css" rel="stylesheet">
+
     <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
+
     <link href="/css/thewbb.css" rel="stylesheet">
 </head>
 
@@ -131,7 +134,8 @@
                                                                     break;
                                                                 default:
                                                                     $url = empty($params["url"])?$url:($params["url"].$row["id"]);
-                                                                    echo "<a class='btn btn-default btn-xs' href='$url'>{$params["label"]}</a>";
+                                                                    $class = empty($params["class"])?"btn-defult":$params["class"];
+                                                                    echo "<a class='btn btn-xs $class' href='$url' confirm-title='{$params["confirm-title"]}' confirm-message='{$params["confirm-message"]}'><i class='glyphicon glyphicon-certificate'></i>&nbsp;{$params["label"]}</a>";
                                                             }
                                                         }
                                                     }
@@ -273,7 +277,7 @@
                                     <?break;
                                 case 'datetime_range':?>
                                     <div class="form-group">
-                                        <?echo $field['label']?>开始时间http://admin.doctorbei.com/delivery/list
+                                        <?echo $field['label']?>开始时间
                                         <input type="text" name="search_<?echo $key?>_begin" id="search_<?echo $key?>_begin" class="form-control datetime" value="<?echo $field['datetime_begin']?>"/>
                                     </div>
                                     <div class="form-group">
@@ -281,6 +285,16 @@
                                         <input type="text" name="search_<?echo $key?>_end" id="search_<?echo $key?>_end" class="form-control datetime" value="<?echo $field['datetime_end']?>" />
                                     </div>
                                     <?break;
+                                    case 'date_range':?>
+                                        <div class="form-group">
+                                            <?echo $field['label']?>开始时间
+                                            <input type="text" name="search_<?echo $key?>_begin" id="search_<?echo $key?>_begin" class="form-control dateonly" value="<?echo $field['datetime_begin']?>"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <?echo $field['label']?>结束时间
+                                            <input type="text" name="search_<?echo $key?>_end" id="search_<?echo $key?>_end" class="form-control dateonly" value="<?echo $field['datetime_end']?>" />
+                                        </div>
+                                        <?break;
                                     default:
                                         echo '
                                         <div class="form-group">
@@ -324,21 +338,35 @@
 <script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
 <!-- Custom Theme Scripts -->
 <script src="/bower_components/gentelella/build/js/custom.min.js"></script>
+
 <script src="/bower_components/jquery-confirm2/dist/jquery-confirm.min.js"></script>
+
 <script src="/bower_components/moment/min/moment-with-locales.min.js"></script>
+
 <script src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
+
 <script>
     $(".datetime").datetimepicker({format:'YYYY-MM-DD HH:mm', locale:'zh-cn'});
+    $(".dateonly").datetimepicker({format:'YYYY-MM-DD', locale:'zh-cn'});
+    $(".btn-need-confirm").click(confirm);
+    $(".btn-remove").click(confirm);
 
-    $(".btn-remove").click(function(){
+    function confirm(){
         var url = $(this).attr("href");
+        var title = $(this).attr("confirm-title");
+        var message = $(this).attr("confirm-message");
+        console.log(title);
+        console.log(message);
+        if(title == "") title = '删除记录';
+        if(message == "") message = '确定要删除这条记录吗？';
+
         $.confirm({
-            title: '删除记录',
-            content: '确定要删除这条记录吗？',
+            title: title,
+            content: message,
             type: 'red',
             buttons: {
                 ok: {
-                    text: "删除",
+                    text: "确认",
                     btnClass: 'btn-danger',
                     keys: ['enter'],
                     action: function(){
@@ -354,21 +382,23 @@
             }
         });
         return false;
-    });
+    }
 
     $(".btn-select").click(function(event){
         var values = $(this).attr("value").split("-");
         var key = ("#<?echo $_GET["key"]?>").replace("\.", "\\\.");
         var data = ("#<?echo $_GET["data"]?>").replace("\.", "\\\.");
-console.log(values);
+
         $(key, parent.document).attr("value", values[0]);
         $(data, parent.document).attr("value", values[1]);
 
         event.preventDefault();
 
-        $("#show_mask_parent", parent.document).css("display", "none");
-        $("#child-close", parent.document).css("display", "none");
-
+        if(window.parent.onShowIFrameClose){
+            window.parent.onShowIFrameClose();
+        }
+        $(".show_mask_parent", parent.document).css("display", "none");
+        $(".child-close", parent.document).css("display", "none");
     });
 
 </script>

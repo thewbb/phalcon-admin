@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>须眉管理平台 | <?echo $title?></title>
+    <title>管理平台 | <?echo $title?></title>
 
     <!-- Bootstrap -->
     <link href="/bower_components/gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,6 +25,8 @@
     <link href="/bower_components/gentelella/vendors/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
 
     <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
+
+    <link href="/css/thewbb.css" rel="stylesheet">
 </head>
 
 <body class="nav-md">
@@ -70,7 +72,7 @@
                                             <div class="col-md-6 col-sm-6 col-xs-12">
                                                 <div><?echo $field["data"]?></div>
                                                 <div id="-<?echo $key?>" action="/file/upload" class="dropzone" style="margin-top: 8px;"></div>
-                                                <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>">
+                                                <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo empty($_POST["post-$key"])? $field["data"]:$_POST["post-$key"]?>">
                                             </div>
                                         </div>
                                         <?break;
@@ -80,9 +82,9 @@
                                                 <?echo $field["label"]?>
                                             </label>
                                             <div class="col-md-6 col-sm-6 col-xs-12">
-                                                <div><img id="show-<?echo $key?>" src="<?echo $field["data"]?>" style="max-width: 100%;"> </div>
+                                                <div><img id="show-<?echo $key?>" src="<?echo empty($_POST["post-$key"])? $field["data"]:$_POST["post-$key"]?>" style="max-width: 100%;"> </div>
                                                 <div id="-<?echo $key?>" action="/file/upload" class="dropzone" style="margin-top: 8px;"></div>
-                                                <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>">
+                                                <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo empty($_POST["post-$key"])? $field["data"]:$_POST["post-$key"]?>">
                                             </div>
                                         </div>
                                         <?break;
@@ -94,35 +96,12 @@
                                             <div class="col-md-6 col-sm-6 col-xs-12">
 
                                                 <select class="form-control col-md-7 col-xs-12" name="post-<?echo $key?>">
-                                                    <?foreach($field["options"] as $key => $option){?>
-                                                        <option value="<?echo $key?>" <?echo $field["data"] == $key?"selected":""?>><?echo $option?></option>
+                                                    <?foreach($field["options"] as $option_id => $option){?>
+                                                        <option value="<?echo $option_id?>" <?echo (empty($_POST["post-$key"])? $field["data"]:$_POST["post-$key"]) == $option_id?"selected":""?>><?echo $option?></option>
                                                     <?}?>
                                                 </select>
                                             </div>
                                         </div>
-                                        <?break;
-                                    case "many_to_one":?>
-                                        <div class="form-group">
-                                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
-                                                <?echo $field["label"]?>
-                                            </label>
-                                            <div class="col-md-6 col-sm-6 col-xs-12">
-                                                <div style="float: left;">
-                                                    <input class="form-control" style="height: 32px;" type="text" id="post-<?echo $key?>-data"
-                                                           name="post-<?echo $key?>-data" readonly value="<?echo $field["show"]?>">
-                                                    <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>">
-                                                    <input type="hidden" id="post-<?echo $key?>-refer" name="post-<?echo $key?>-refer" value="<?echo $field["id"]?>">
-                                                    <input type="hidden" id="post-<?echo $key?>-show" name="post-<?echo $key?>-show" value="<?list($none, $field_name) = explode(".", $key);echo $field_name;?>">
-                                                </div>
-                                                <div style="float: left;">
-                                                    <button id="post-<?echo $key?>" name="post-<?echo $key?>" style="height: 32px;margin-left: 16px;" class="btn btn-default many_to_one">选择</button>
-                                                    <input type="hidden" id="post-<?echo $key?>-url" value="<?echo $field["url"]?>">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <?break;
-                                    case "hidden":?>
-                                        <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>" required="required" class="form-control col-md-7 col-xs-12">
                                         <?break;
                                     case "boolean":?>
                                         <div class="form-group">
@@ -134,13 +113,58 @@
                                             </div>
                                         </div>
                                         <?break;
+                                    case "many_to_one":?>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                <?echo $field["label"]?>
+                                            </label>
+                                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                                <div style="float: left;width: 70%;">
+                                                    <?list($table_name, $field_name) = explode(".", $key);?>
+                                                    <input class="form-control" style="height: 32px;" type="text" id="post-<?echo $key?>-data"
+                                                           name="post-<?echo $key?>-data" readonly value="<?echo empty($_POST["post-{$table_name}_{$field_name}-data"])?$field["show"]:$_POST["post-{$table_name}_{$field_name}-data"]?>">
+                                                    <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo empty($_POST["post-{$table_name}_{$field_name}"])?$field["data"]:$_POST["post-{$table_name}_{$field_name}"]?>">
+                                                    <input type="hidden" id="post-<?echo $key?>-refer" name="post-<?echo $key?>-refer" value="<?echo $field["id"]?>">
+                                                    <input type="hidden" id="post-<?echo $key?>-show" name="post-<?echo $key?>-show" value="<?echo $field_name;?>">
+                                                </div>
+                                                <div style="float: left;">
+                                                    <button id="post-<?echo $key?>" name="post-<?echo $key?>" style="height: 32px;margin-left: 16px;" class="btn btn-default many_to_one">选择</button>
+                                                    <input type="hidden" id="post-<?echo $key?>-url" value="<?echo $field["url"]?>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?break;
+                                    case "datetime":?>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                <?echo $field["label"]?>
+                                            </label>
+                                            <div class="col-md-6 col-sm-6 col-xs-12" style="padding-top: 5px;">
+                                                <input type="text" name="post-<?echo $key?>" id="post-<?echo $key?>" class="form-control datetime" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>"/>
+
+                                            </div>
+                                        </div>
+                                        <?break;
+                                    case "richedit":?>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                <?echo $field["label"]?>
+                                            </label>
+                                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                                <textarea type="text" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>" required="required" class="form-control col-md-7 col-xs-12 ckeditor"></textarea>
+                                            </div>
+                                        </div>
+                                        <?break;
+                                    case "hidden":?>
+                                        <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>" required="required" class="form-control col-md-7 col-xs-12">
+                                        <?break;
                                     default:?>
                                     <div class="form-group">
                                         <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
                                             <?echo $field["label"]?>
                                         </label>
                                         <div class="col-md-6 col-sm-6 col-xs-12">
-                                            <input type="text" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo $field["data"]?>" required="required" class="form-control col-md-7 col-xs-12">
+                                            <input type="text" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>" required="required" class="form-control col-md-7 col-xs-12">
                                         </div>
                                     </div>
                                 <?}
@@ -150,7 +174,7 @@
                             <input type="hidden" name="<?echo $this->security->getTokenKey() ?>" value="<?echo $this->security->getToken() ?>"/>
                             <div class="form-group">
                                 <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
-                                    <a href="<?echo "/$current->controller/list"?>" class="btn btn-primary" type="button">取消</a>
+                                    <a href="<?echo "/$current->controller/list"?>" class="btn btn-default" type="button">取消</a>
                                     <button type="submit" class="btn btn-success">修改</button>
                                 </div>
                             </div>
@@ -188,6 +212,8 @@
 <script src="/bower_components/moment/min/moment-with-locales.min.js"></script>
 
 <script src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
+
+<script src="/bower_components/ckeditor/ckeditor.js"></script>
 <script>
     Dropzone.autoDiscover = false;
     $(".datetime").datetimepicker({format:'YYYY-MM-DD HH:mm', locale:'zh-cn'});

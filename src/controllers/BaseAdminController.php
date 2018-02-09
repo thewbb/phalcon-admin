@@ -1,21 +1,26 @@
 <?php
 class BaseAdminController extends ControllerBase
 {
+    public $model_view_path = "";
+
     public $tableName = "";
 
     public function beforeExecuteRoute($dispatcher)
     {
+        $this->model_view_path = __DIR__."/../views/";
         parent::beforeExecuteRoute($dispatcher);
     }
 
     public function indexAction(){
-        echo "admin index";exit();
+
+        $this->dashboardAction();
     }
 
     public function dashboardAction($template = null){
         if(empty($template)){
-            $template = __DIR__."/../views/template/dashboard";
+            $template = $this->model_view_path."template/dashboard";
         }
+
         $this->view->pick($template);
         $this->view->setVars(array(
             "sidebarTemplate" => $this->sidebarTemplate(),
@@ -26,6 +31,14 @@ class BaseAdminController extends ControllerBase
     }
 
     public function listAction($search_fields = [], $fields = [], $sqlCount = null, $sqlMain = null, $template = null){
+        // url中的参数作用如下：
+        // sort_order : 排序顺序
+        // model : 不显示左侧菜单
+        // key : 选中后，会将当前页面的这个id的控件值，填写为选中行的id
+        // data : 选中后，会将当前页面这个id的空间之，填写为选中行的show指定的列
+        // show : 指定返回选中行的哪个字段，与data合并使用
+
+
         if(empty($template)){
             $template = __DIR__."/../views/template/list";
         }
@@ -45,6 +58,7 @@ class BaseAdminController extends ControllerBase
         foreach($search_fields as $key => &$field){
             switch($field['type']){
                 case 'datetime_range':
+                case 'date_range':
                     $field['datetime_begin'] = $this->getQuery("search_{$key}_begin", $field['datetime_begin']);
                     $field['datetime_end'] = $this->getQuery("search_{$key}_end", $field['datetime_end']);
                     $searchParam .= "&search_{$key}_begin=".$field['datetime_begin'];
@@ -60,11 +74,8 @@ class BaseAdminController extends ControllerBase
                     $field['data'] = $this->getQuery('search_'.$key, $field['data']);
                     $searchParam .= '&search_'.$key."=".$field['data'];
                     if(isset($field['data'])){
-                        if($field['data'] == "0"){
-                            $where .= " and $this->tableName.$key = 0";
-                        }
-                        else if($field['data'] == "1"){
-                            $where .= " and $this->tableName.$key = 1";
+                        if($field['data'] != ""){
+                            $where .= " and $this->tableName.$key = {$field['data']}";
                         }
                         else{
                             // select both
@@ -91,10 +102,15 @@ class BaseAdminController extends ControllerBase
             }
         }
 
+        if(!empty($this->field_logic_remove)){
+            $where .= " and $this->field_logic_remove = 0 ";
+        }
+
         foreach($fields as $key => &$field){
             switch($field['type']){
                 case 'many_to_one':
                     // 判断左联接的参数是否存在
+                    // 目前只有列表中显示的项目才能使用左联接查询，所以需要查询选项的话，需要把被查询的字段同时添加到查询和列表里面
                     if(empty($field['refer'])){throw new Exception("many_to_one need refer.");}
                     if(empty($field['field'])){throw new Exception("many_to_one need field.");}
                     list($joinTable, $joinField) = explode(".", $key);
@@ -123,7 +139,8 @@ class BaseAdminController extends ControllerBase
         $sql = "$sqlMain $where order by $sortBy $sortOrder limit $perPage offset ".(($page - 1) * $perPage);
         $records = $this->fetchAll($sql);
 
-        //$this->redis->setex($this->controller."-".$this->action."-sql", 7200, "$sqlMain $where order by $sortBy $sortOrder");
+        // save current list query sql for export action
+        $this->session->set($this->controller."-".$this->action."-sql", "$sqlMain $where order by $sortBy $sortOrder");
 
         // 如果list action里面没有设置field参数，那么默认显示表中的所有字段
         if(empty($fields)){
@@ -138,7 +155,10 @@ class BaseAdminController extends ControllerBase
             }
         }
 
-        $this->session->set("HTTP_REFERER", $_SERVER["HTTP_REFERER"]);
+        if($_GET["model"] != 1){
+            $this->session->set("HTTP_REFERER", $_SERVER["REQUEST_URI"]);
+        }
+
         $this->view->pick($template);
         $this->view->setVars(array(
             "current" => $this,
@@ -200,31 +220,38 @@ class BaseAdminController extends ControllerBase
         $this->view->pick($template);
         if($this->request->isPost()){
             // check csrf attack
-//            if (!$this->security->checkToken()) {
-//                return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
-//            }
-
+            if (!$this->security->checkToken()) {
+                return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
+            }
             $params = [];
             foreach($fields as $key => $field){
                 $param = $this->getPost("post-".str_replace(".", "_", $key));
-                if(!empty($param)){
+                if(!is_null($param)){
                     switch($field["type"]){
                         case "many_to_one":
                             $params[$field["field"]] = $param;
                             break;
+                        case "boolean":
+                            $params[$key] = ($param == "on"? 1:0);
+                            break;
                         default:
                             $params[$key] = $param;
                     }
+
                     if(isset($field["pre_post"])){
                         // 提交前的修改参数，根据用户传递进来的函数参数，在提交到数据库里之前修改这个值
                         $params[$key] = call_user_func([$this, $field["pre_post"]], $params[$key]);
                     }
                 }
             }
+            $user = $this->getLoginUser();
+            if(!empty($this->field_operator)){
+                $params[$this->field_operator] = $user["id"];
+            }
 
-            $this->insert($this->tableName, $params);
-            $this->flashSession->success("添加成功！");
-            header("location: /".$this->controller."/list");
+            if($this->insert($this->tableName, $params)){
+                $this->returnSuccess("添加成功！");
+            }
         }
         else{
             $database_name = $this->database->dbname;
@@ -233,13 +260,13 @@ class BaseAdminController extends ControllerBase
             if(empty($records)){
                 throw new Exception("table not exist");
             }
-
-            $this->view->setVars(array(
-                "current" => $this,
-                "title" => "添加",
-                "fields" => $fields,
-            ));
         }
+
+        $this->view->setVars(array(
+            "current" => $this,
+            "title" => "添加",
+            "fields" => $fields,
+        ));
     }
 
     public function editAction($fields = [], $template = null){
@@ -270,19 +297,49 @@ class BaseAdminController extends ControllerBase
 
                 switch($field["type"]){
                     case "many_to_one":
-                        $params[$field["field"]] = $param;
+                        if(empty($param)){
+                            $params[$field["field"]] = null;
+                        }
+                        else{
+                            $params[$field["field"]] = $param;
+                        }
+
                         break;
                     case "boolean":
                         $params[$key] = ($param == "on"? 1:0);
                         break;
                     default:
-                        $params[$key] = $param;
+//                        if($key == "operation_type"){
+//                            echo $param;exit();
+//                        }
+                        if(is_null($param) || ($param === "")){
+                            $params[$key] = null;
+                        }
+                        else{
+                            $params[$key] = $param;
+                        }
                 }
             }
+            $user = $this->getLoginUser();
+            if(!empty($this->field_operator)){
+                $params[$this->field_operator] = $user["id"];
+            }
 
-            $this->update($this->tableName, $params, "id = $id");
-            $this->flashSession->success("修改成功！");
-            header("location: /".$this->controller."/list");
+            $effectRow = $this->update($this->tableName, $params, "id = $id");
+            if($effectRow === false){
+                // 更新失败，提示错误信息
+
+            }
+            else if($effectRow > 0){
+                $this->returnSuccess("修改成功！");
+            }
+            else if($effectRow === 0){
+                // 数据没有变动
+                $this->returnSuccess("没有改动！");
+            }
+            else{
+                // 不存在这个情况
+            }
         }
         else{
             $id = $this->getQuery("id");
@@ -304,27 +361,38 @@ class BaseAdminController extends ControllerBase
                     $field["data"] = $record[$key];
                 }
             }
-
-            $this->view->setVars(array(
-                "current" => $this,
-                "id" => $id,
-                "fields" => $fields,
-                "title" => "修改",
-            ));
         }
+        $this->view->setVars(array(
+            "current" => $this,
+            "id" => $id,
+            "fields" => $fields,
+            "title" => "修改",
+        ));
     }
 
     public function removeAction(){
-        $this->getLoginUser();
+        $user = $this->getLoginUser();              // check login
         $id = $this->getQuery("id");
-        $sql = "delete from $this->tableName where id = $id";
-        $rowCount = $this->execute($sql);
-        $this->flashSession->success("删除成功！$rowCount 条");
-        header("location: /".$this->controller."/list");
+        if(!empty($this->field_operator)){
+            $set_operator = ", $this->field_operator = {$user["id"]} ";
+        }
+
+        if(empty($this->field_logic_remove)){
+            // physical remove
+            $sql = "delete from $this->tableName where id = $id";
+            $rowCount = $this->execute($sql);
+        }
+        else{
+            // logic remove
+            $sql = "update $this->tableName set $this->field_logic_remove = 1 $set_operator where id = $id";
+            $rowCount = $this->execute($sql);
+        }
+        $this->returnSuccess("删除成功！$rowCount 条");
+
     }
 
     public function exportAction($fields = []){
-        $sql = $this->redis->get($this->controller."-list-sql");
+        $sql = $this->session->get($this->controller."-list-sql");
         $records = $this->fetchAll($sql);
 
 
