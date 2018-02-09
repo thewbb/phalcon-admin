@@ -167,6 +167,14 @@
                                                 case "num":
                                                     echo number_format($row[$key]);
                                                     break;
+                                                case "datetime":
+                                                    if(empty($field["format"])){
+                                                        echo $row[$key];
+                                                    }
+                                                    else{
+                                                        echo date($field["format"], strtotime($row[$key]));
+                                                    }
+                                                    break;
                                                 case "many_to_one":
                                                     list($table_name, $table_field) = explode(".", $key);
                                                     echo $row[$table_name."__".$table_field];
