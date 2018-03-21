@@ -27,6 +27,8 @@
     <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
 
     <link href="/css/thewbb.css" rel="stylesheet">
+
+    <script src="https://cdn.bootcss.com/vue/2.5.13/vue.js"></script>
 </head>
 
 <body class="nav-md">
@@ -68,7 +70,7 @@
                                             </label>
                                             <div class="col-md-6 col-sm-6 col-xs-12">
 
-                                                <select class="form-control col-md-7 col-xs-12" name="post-<?echo $key?>">
+                                                <select class="form-control col-md-7 col-xs-12" name="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?>>
                                                     <?foreach($field["options"] as $key => $option){?>
                                                         <option value="<?echo $key?>" <?echo $field["data"] == $key?"selected":""?>><?echo $option?></option>
                                                     <?}?>
@@ -82,7 +84,7 @@
                                                 <?echo $field["label"]?>
                                             </label>
                                             <div class="col-md-6 col-sm-6 col-xs-12" style="padding-top: 5px;">
-                                                <input type="checkbox" class="js-switch" id="post-<?echo $key?>" name="post-<?echo $key?>" <?echo $field["data"] == 1?"checked":""?> />
+                                                <input type="checkbox" class="js-switch" id="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?> name="post-<?echo $key?>" <?echo $field["data"] == 1?"checked":""?> />
                                             </div>
                                         </div>
                                         <?break;
@@ -108,13 +110,80 @@
                                             </div>
                                         </div>
                                         <?break;
+                                    case "one_to_many":?>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
+                                                <?echo $field["label"]?>
+                                            </label>
+                                            <div class="form-group col-md-9 col-sm-9 col-xs-12" id="post-<?echo $key?>">
+                                                <input type="hidden" name="post-<?echo $key?>" v-model="items_json" >
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <?foreach($field["columns"] as $column_key => $column){?>
+                                                                <td style="min-width:100px;text-align: center;"><?echo $column["label"]?></td>
+                                                            <?}?>
+                                                            <td><button v-on:click="addItem()" type="button">添加</button></td>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="item in items">
+                                                            <?foreach($field["columns"] as $column_key => $column){?>
+                                                                <td><input type="text" width="100%;" v-model="item.<?echo $column_key?>"></td>
+                                                            <?}?>
+                                                            <td><button v-on:click="removeItem(item)" type="button">删除</button></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <script>
+                                                var app_<?echo $key?> = new Vue({
+                                                    el: "#post-<?echo $key?>",
+                                                    data: {
+                                                        items: [],
+                                                    },
+                                                    computed: {
+                                                        items_json: function () {
+                                                            return JSON.stringify(this._data);
+                                                        },
+                                                    },
+                                                    methods:{
+                                                        addItem:function(){
+                                                            console.log("add action");
+
+                                                            this.items.push({
+                                                                <?foreach($field["columns"] as $column_key => $column){
+                                                                    echo $column_key.":null,";
+                                                                }?>
+                                                            });
+
+                                                        },
+                                                        removeItem:function(item){
+                                                            console.log("remove action");
+                                                            if(confirm('确实要删除吗?')){
+                                                                for(var i = 0; i < this.items.length; i++){
+                                                                    if(this.items[i] == item){
+                                                                        this.items.splice(i,1);
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                            event.preventDefault();
+                                                            return false;
+                                                        }
+                                                    }
+                                                });
+                                            </script>
+                                        </div>
+
+                                        <?break;
                                     case "datetime":?>
                                         <div class="form-group">
                                             <label class="control-label col-md-3 col-sm-3 col-xs-12" for="post-<?echo $key?>">
                                                 <?echo $field["label"]?>
                                             </label>
                                             <div class="col-md-6 col-sm-6 col-xs-12" style="padding-top: 5px;">
-                                                <input type="text" name="post-<?echo $key?>" id="post-<?echo $key?>" class="form-control datetime" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>"/>
+                                                <input type="text" name="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?> id="post-<?echo $key?>" class="form-control datetime" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>"/>
 
                                             </div>
                                         </div>
@@ -125,7 +194,7 @@
                                                 <?echo $field["label"]?>
                                             </label>
                                             <div class="col-md-9 col-sm-9 col-xs-12">
-                                                <textarea type="text" id="post-<?echo $key?>" name="post-<?echo $key?>" value="" required="required" class="form-control col-md-7 col-xs-12 ckeditor"></textarea>
+                                                <textarea type="text" id="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?> name="post-<?echo $key?>" value="" required="required" class="form-control col-md-7 col-xs-12 ckeditor"></textarea>
                                             </div>
                                         </div>
                                         <?break;
@@ -139,7 +208,7 @@
                                                 <?echo $field["label"]?>
                                             </label>
                                             <div class="col-md-6 col-sm-6 col-xs-12">
-                                                <input type="text" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>" required="required" class="form-control col-md-7 col-xs-12">
+                                                <input type="text" id="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?> name="post-<?echo $key?>" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>" required="required" class="form-control col-md-7 col-xs-12">
                                             </div>
                                         </div>
                                     <?}
@@ -191,6 +260,8 @@
 <script src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 
 <script src="/bower_components/ckeditor/ckeditor.js"></script>
+
+<script src="/js/thewbb_alert.js"></script>
 <script>
     Dropzone.autoDiscover = false;
     $(".datetime").datetimepicker({format:'YYYY-MM-DD HH:mm', locale:'zh-cn'});

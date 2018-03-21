@@ -19,6 +19,8 @@
     <link href="/bower_components/gentelella/vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css" rel="stylesheet"/>
     <!-- Switchery -->
     <link href="/bower_components/gentelella/vendors/switchery/dist/switchery.min.css" rel="stylesheet">
+
+    <link href="/bower_components/gentelella/vendors/iCheck/skins/flat/green.css" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
 
@@ -53,7 +55,8 @@
                         <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
-                        <div class="table-responsive">
+                        <form id="main_form" action="/<?echo $current->controller?>/batch" method="post">
+                            <div class="table-responsive">
                             <table class="table table-striped jambo_table bulk_action">
                                 <thead>
                                 <tr class="headings">
@@ -85,8 +88,12 @@
                                         }
                                     }
                                     ?>
-                                    <th class="bulk-actions" colspan="7">
+                                    <th class="bulk-actions" colspan="12">
                                         <a class="antoo" style="color:#fff; font-weight:500;">批量处理 ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
+                                        <?foreach($batchActions as $k => $v){?>
+                                            <button type="submit" id="batch-<?echo $k?>" class="btn <?echo $v["class"]?> btn-sm" style="margin-bottom: 0; margin-left: 8px; margin-right: 0px;" confirm-title="<?echo $v['title']?>" confirm-message="<?echo $v['message']?>"><?echo $v['label']?></button>
+                                        <?}?>
+
                                     </th>
                                 </tr>
                                 </thead>
@@ -94,8 +101,8 @@
                                 <tbody>
                                 <?for($i = 0; $i < count($list); $i++){ $row = $list[$i];?>
                                     <tr class="<?echo $i % 2 == 0? "odd":"even" ?> pointer">
-                                        <td class="a-center ">
-                                            <input type="checkbox" class="flat" name="table_records">
+                                        <td class="a-center">
+                                            <input type="checkbox" class="flat" name="table_records[]" value="<?echo $row['id']?>">
                                         </td>
 
                                         <?
@@ -134,7 +141,7 @@
                                                                     break;
                                                                 default:
                                                                     $url = empty($params["url"])?$url:($params["url"].$row["id"]);
-                                                                    $class = empty($params["class"])?"btn-defult":$params["class"];
+                                                                    $class = empty($params["class"])?"btn-default":$params["class"];
                                                                     echo "<a class='btn btn-xs $class' href='$url' confirm-title='{$params["confirm-title"]}' confirm-message='{$params["confirm-message"]}'><i class='glyphicon glyphicon-certificate'></i>&nbsp;{$params["label"]}</a>";
                                                             }
                                                         }
@@ -159,7 +166,15 @@
                                                     echo '<img src="'.$row[$key].'" style="width:150px;">';
                                                     break;
                                                 case "url":
-                                                    echo '<a href="'.$row[$key].'" >'.$field["data"].'</a>';
+                                                    $urlParams = [];
+                                                    foreach($field["params"] as $paramKey => $paramValue){
+                                                        $urlParams[] = $paramKey."=".$row[$paramValue];
+                                                    }
+                                                    // 自定义的href为空时，链接为数据库中存储的值
+                                                    // 当设置参数时，将设置好的参数名称和参数值拼接到url后面
+                                                    $url = empty($field["href"])?$row[$key]:$field["href"].(empty($urlParams)?'':'?'.implode("&", $urlParams));
+                                                    // 默认显示设置的data，如果没有设置data，则显示数据库中存储的值
+                                                    echo '<a style="text-decoration:underline;" href="'.$url.'" >'.(empty($field["data"])?$row[$key]:$field["data"]).'</a>';
                                                     break;
                                                 case "money":
                                                     echo number_format($row[$key], 2).'元';
@@ -195,6 +210,10 @@
                             <div>
                                 <div style="width: 20%;float: left;">
                                     共：<?echo $recordCount?>条
+                                    &nbsp;
+                                    <?if($current->export){?>
+                                        <a href="<?echo "/".$current->controller."/export"?>" target="_blank" class="btn btn-primary btn-xs">导出</a>
+                                    <?}?>
                                 </div>
                                 <div style="width: 80%;float: left;visibility: <?echo $pageCount <= 1?"hidden":"inherit" ?>;">
                                     <div class="dataTables_paginate paging_simple_numbers" id="datatable_paginate">
@@ -259,6 +278,7 @@
                             </div>
 
                         </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -283,6 +303,18 @@
                                         </select>
                                     </div>
                                     <?break;
+                                    case 'boolean':?>
+                                        <div class="form-group">
+                                            <table style="width: 100%">
+                                                <tr>
+                                                    <td style="width: 70%;"><?echo $field['label']?></td>
+                                                    <td style="width: 30%;text-align: right;"><input type="checkbox" class="js-switch" name="search_<?echo $key?>" <?echo empty( $field['data'])?"":"checked"?> value="1"></td>
+                                                </tr>
+                                            </table>
+
+
+                                        </div>
+                                        <?break;
                                 case 'datetime_range':?>
                                     <div class="form-group">
                                         <?echo $field['label']?>开始时间
@@ -345,7 +377,7 @@
 
 <script src="/bower_components/gentelella/vendors/iCheck/icheck.min.js"></script>
 <!-- Custom Theme Scripts -->
-<script src="/bower_components/gentelella/build/js/custom.min.js"></script>
+<script src="/bower_components/gentelella/build/js/custom.js"></script>
 
 <script src="/bower_components/jquery-confirm2/dist/jquery-confirm.min.js"></script>
 
@@ -353,6 +385,7 @@
 
 <script src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 
+<script src="/js/thewbb_alert.js"></script>
 <script>
     $(".datetime").datetimepicker({format:'YYYY-MM-DD HH:mm', locale:'zh-cn'});
     $(".dateonly").datetimepicker({format:'YYYY-MM-DD', locale:'zh-cn'});
@@ -363,10 +396,9 @@
         var url = $(this).attr("href");
         var title = $(this).attr("confirm-title");
         var message = $(this).attr("confirm-message");
-        console.log(title);
-        console.log(message);
-        if(title == "") title = '删除记录';
-        if(message == "") message = '确定要删除这条记录吗？';
+
+        if(title == "" || title == null) title = '删除记录';
+        if(message == "" || message == null) message = '确定要删除这条记录吗？';
 
         $.confirm({
             title: title,
@@ -378,7 +410,12 @@
                     btnClass: 'btn-danger',
                     keys: ['enter'],
                     action: function(){
-                        window.location.href = url;
+                        if(url == "" || url == null){
+                            $("#main_form").submit();
+                        }
+                        else{
+                            window.location.href = url;
+                        }
                     }
                 },
                 cancel: {

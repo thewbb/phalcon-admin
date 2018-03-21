@@ -5,6 +5,8 @@ class BaseAdminController extends ControllerBase
 
     public $tableName = "";
 
+    public $export = false;
+
     public function beforeExecuteRoute($dispatcher)
     {
         $this->model_view_path = __DIR__."/../views/";
@@ -30,14 +32,13 @@ class BaseAdminController extends ControllerBase
         ));
     }
 
-    public function listAction($search_fields = [], $fields = [], $sqlCount = null, $sqlMain = null, $template = null){
+    public function listAction($search_fields = [], $fields = [], $sqlCount = null, $sqlMain = null, $template = null, $batchActions = null){
         // url中的参数作用如下：
         // sort_order : 排序顺序
         // model : 不显示左侧菜单
         // key : 选中后，会将当前页面的这个id的控件值，填写为选中行的id
         // data : 选中后，会将当前页面这个id的空间之，填写为选中行的show指定的列
         // show : 指定返回选中行的哪个字段，与data合并使用
-
 
         if(empty($template)){
             $template = __DIR__."/../views/template/list";
@@ -106,6 +107,7 @@ class BaseAdminController extends ControllerBase
             $where .= " and $this->field_logic_remove = 0 ";
         }
 
+        $joinTables = [];
         foreach($fields as $key => &$field){
             switch($field['type']){
                 case 'many_to_one':
@@ -114,7 +116,10 @@ class BaseAdminController extends ControllerBase
                     if(empty($field['refer'])){throw new Exception("many_to_one need refer.");}
                     if(empty($field['field'])){throw new Exception("many_to_one need field.");}
                     list($joinTable, $joinField) = explode(".", $key);
-                    $leftJoin .= " left join $joinTable on $this->tableName.{$field['field']} = $joinTable.{$field['refer']} ";
+                    if(array_search($joinTable, $joinTables) === false){
+                        $joinTables[] = $joinTable;
+                        $leftJoin .= " left join $joinTable on $this->tableName.{$field['field']} = $joinTable.{$field['refer']} ";
+                    }
                     $leftJoinField .= ", $joinTable.$joinField as {$joinTable}__$joinField ";
                     break;
             }
@@ -159,6 +164,12 @@ class BaseAdminController extends ControllerBase
             $this->session->set("HTTP_REFERER", $_SERVER["REQUEST_URI"]);
         }
 
+        if($batchActions == null){
+            $batchActions = [
+                "remove" => ['label' => "批量删除", 'title' => '确认删除', 'message' => '确定要删除这些记录吗？', 'class' => 'btn-danger btn-need-confirm'],
+            ];
+        }
+
         $this->view->pick($template);
         $this->view->setVars(array(
             "current" => $this,
@@ -171,6 +182,7 @@ class BaseAdminController extends ControllerBase
             "searchFields" => $search_fields,
             "searchParam" => $searchParam,
             "fields" => $fields,
+            "batchActions" => $batchActions,
             "list" => $records,
             "title" => "列表",
         ));
@@ -200,6 +212,31 @@ class BaseAdminController extends ControllerBase
                         $row = $this->fetchOne($sql, 1000);
                         $value["data"] = $row[$field_name];
                         break;
+                    case "one_to_many":
+                        // 从对应的表中取值
+                        // 将选出的数据变成一个html的table，然后输出
+                        $sql = "select ".implode(",", array_keys($value["columns"]))." from $key where {$value["refer"]} = '{$record[$value["field"]]}'";
+                        $rows = $this->fetchAll($sql);
+                        $showData = "";
+                        $showData .= "<table style='border: 1px solid #efefef;'>";
+                        $showData .= "<tr style='border: 1px solid #efefef;'>";
+                        foreach($value["columns"] as $row_field_name){
+                            $showData .= "<td style='text-align: center;border: 1px solid #efefef;padding: 4px;'>{$row_field_name["label"]}</td>";
+                        }
+
+                        $showData .= "</tr>";
+                        foreach($rows as $row){
+                            $showData .= "<tr>";
+                            foreach($row as $row_field){
+                                $showData .= "<td style='min-width:100px;text-align: center;border: 1px solid #efefef;padding: 4px;'>".$row_field."</td>";
+                            }
+                            $showData .= "</tr>";
+                        }
+                        $showData .= "</table>";
+                        $value["data"] = $showData;
+                        break;
+                    case "show_data":
+                        break;
                     default:
                         $value["data"] = $record[$key];
                 }
@@ -220,16 +257,31 @@ class BaseAdminController extends ControllerBase
         $this->view->pick($template);
         if($this->request->isPost()){
             // check csrf attack
-            if (!$this->security->checkToken()) {
-                return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
-            }
+//            if (!$this->security->checkToken()) {
+//                return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
+//            }
+            //echo print_r($fields);exit();
             $params = [];
+            $itemParams = [];
             foreach($fields as $key => $field){
                 $param = $this->getPost("post-".str_replace(".", "_", $key));
                 if(!is_null($param)){
                     switch($field["type"]){
                         case "many_to_one":
                             $params[$field["field"]] = $param;
+                            break;
+                        case "one_to_many":
+                            $param = json_decode($param, 1);
+                            foreach($param["items"] as $item_key => $item_value){
+                                $itemParam = [];
+                                foreach($field["columns"] as $field_key => $field_value){
+                                    if($item_value[$field_key] != ""){
+                                        $itemParam[$field_key] = $item_value[$field_key];
+                                    }
+                                }
+                                // 将需要插入到关联表的数据放在数组中，等待数据插入后，生成好id，再将对应的数据插入到关联表中
+                                $itemParams[] = ["table_name" => $key, "refer" => $field["refer"], "data" => $itemParam];
+                            }
                             break;
                         case "boolean":
                             $params[$key] = ($param == "on"? 1:0);
@@ -249,9 +301,21 @@ class BaseAdminController extends ControllerBase
                 $params[$this->field_operator] = $user["id"];
             }
 
-            if($this->insert($this->tableName, $params)){
+            foreach($params as $key => $value){
+                if($value == ""){
+                    unset($params[$key]);
+                }
+            }
+            $this->begin();
+            if($lastInsertId = $this->insert($this->tableName, $params)){
+                // 成功插入后，再插入关联表数据
+                foreach($itemParams as $param){
+                    $this->insert($param["table_name"], array_merge($param["data"], [$param["refer"] => $lastInsertId]));
+                }
+                $this->commit();
                 $this->returnSuccess("添加成功！");
             }
+            $this->rollback();
         }
         else{
             $database_name = $this->database->dbname;
@@ -285,6 +349,7 @@ class BaseAdminController extends ControllerBase
         }
 
         if($this->request->isPost()){
+            $effectRow = 0;
             // check csrf attack
             if (!$this->security->checkToken()) {
                 return $this->dispatcher->forward(["controller" => "index", "action" => "show404"]);
@@ -303,7 +368,50 @@ class BaseAdminController extends ControllerBase
                         else{
                             $params[$field["field"]] = $param;
                         }
+                        break;
+                    case "one_to_many":
+                        $param = json_decode($param, 1);
+                        $sql = "select {$field["field"]} from $key where {$field["refer"]} = $id";
+                        $records = $this->fetchAll($sql);
+                        $removeList = [];
+                        // 从数据库中取出所有关联字段，用于比较哪条记录被删除掉了。
+                        foreach($records as $r){
+                            $removeList[] = $r[$field["field"]];
+                        }
 
+                        foreach($param["items"] as $item_value){
+                            $itemParam = [];
+                            // id赋值
+                            if(!empty($item_value[$field["field"]])){
+                                $itemParam[$field["field"]] = $item_value[$field["field"]];
+                            }
+                            // 插入关联表的id
+                            $itemParam[$field["refer"]] = $id;
+                            // 去掉没用的字段，只更新需要的字段
+                            foreach($field["columns"] as $field_key => $field_value){
+                                if($item_value[$field_key] != ""){
+                                    $itemParam[$field_key] = $item_value[$field_key];
+                                }
+                            }
+
+                            // id为空，说明这条是新加的，做插入操作
+                            if(empty($itemParam[$field["field"]])){
+                                $effectRow += $this->insert($key, $itemParam);
+                            }
+                            else{
+                                // id不为空，则更新数据，然后将这个id从待删除列表中出去
+                                $index = array_search($item_value[$field["field"]], $removeList);
+                                if($index >= 0){
+                                    unset($removeList[$index]);
+                                    $effectRow += $this->update($key, $itemParam, "{$field["field"]} = {$itemParam[$field["field"]]}");
+                                }
+                            }
+                            // 将需要插入到关联表的数据放在数组中，等待数据插入后，生成好id，再将对应的数据插入到关联表中
+                            //$itemParams[] = ["table_name" => $key, "refer" => $field["refer"], "data" => $itemParam];
+                        }
+                        if($removeList){
+                            $effectRow += $this->execute("delete from $key where id in (".implode(",", $removeList).")");
+                        }
                         break;
                     case "boolean":
                         $params[$key] = ($param == "on"? 1:0);
@@ -325,8 +433,8 @@ class BaseAdminController extends ControllerBase
                 $params[$this->field_operator] = $user["id"];
             }
 
-            $effectRow = $this->update($this->tableName, $params, "id = $id");
-            if($effectRow === false){
+            $effectRow += $this->update($this->tableName, $params, "id = $id");
+            if($effectRow <= 0){
                 // 更新失败，提示错误信息
 
             }
@@ -350,15 +458,23 @@ class BaseAdminController extends ControllerBase
             }
 
             foreach($fields as $key => &$field){
-                if($field["type"] == "many_to_one"){
-                    list($table_name, $table_field) = explode(".", $key);
-                    $data = $record[$field["field"]];
-                    $sql = "select $table_field from $table_name where {$field["refer"]} = '$data'";
-                    $field["show"] = $this->fetchColumn($sql);
-                    $field["data"] = $data;
-                }
-                else{
-                    $field["data"] = $record[$key];
+                switch($field["type"]){
+                    case "many_to_one":
+                        list($table_name, $table_field) = explode(".", $key);
+                        $data = $record[$field["field"]];
+                        $sql = "select $table_field from $table_name where {$field["refer"]} = '$data'";
+                        $field["show"] = $this->fetchColumn($sql);
+                        $field["data"] = $data;
+                        break;
+                    case "one_to_many":
+                        // 从对应的表中取值
+                        // 将选出的数据变成一个html的table，然后输出
+                        $sql = "select * from $key where {$field["refer"]} = '{$record[$field["field"]]}'";
+                        $rows = $this->fetchAll($sql);
+                        $field["data"] = $rows;
+                        break;
+                    default:
+                        $field["data"] = $record[$key];
                 }
             }
         }
@@ -395,7 +511,6 @@ class BaseAdminController extends ControllerBase
         $sql = $this->session->get($this->controller."-list-sql");
         $records = $this->fetchAll($sql);
 
-
         // Create new PHPExcel object
         $objPHPExcel = new PHPExcel();
         $sheet = $objPHPExcel->setActiveSheetIndex(0);
@@ -425,7 +540,7 @@ class BaseAdminController extends ControllerBase
         for($i = 0; $i < count($records); $i++){
             $column = "A";
             foreach($fields as $key => $value){
-                $sheet->setCellValue($column++.($i+2), $records[$i][$key]);
+                $sheet->setCellValue($column++.($i+2), $records[$i][str_replace(".", "__", $key)]);
             }
         }
 
@@ -439,7 +554,16 @@ class BaseAdminController extends ControllerBase
         exit;
     }
 
-    public function batchAction(){
+    public function batchAction($actions = null){
+        if($actions == null){
+            $actions = [
+                "remove" => ['label' => "批量删除", 'title' => '确认删除', 'message' => '确定要删除这些记录吗？'],
+                "group" => ['label' => "分组", 'title' => '确认删除', 'message' => '确定要删除这些记录吗？'],
+            ];
+        }
+
+        print_r($_POST);
+
         echo "batchAction";exit();
     }
 
