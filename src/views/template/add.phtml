@@ -24,7 +24,9 @@
     <!-- Dropzone.js -->
     <link href="/bower_components/gentelella/vendors/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
 
-    <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css">
+    <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+
+    <link media="all" rel="stylesheet" type="text/css" href="/bower_components/simditor/styles/simditor.css" />
 
     <link href="/css/thewbb.css" rel="stylesheet">
 
@@ -194,7 +196,7 @@
                                                 <?echo $field["label"]?>
                                             </label>
                                             <div class="col-md-9 col-sm-9 col-xs-12">
-                                                <textarea type="text" id="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?> name="post-<?echo $key?>" value="" required="required" class="form-control col-md-7 col-xs-12 ckeditor"></textarea>
+                                                <textarea type="text" id="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?> name="post-<?echo $key?>" value="" required="required" class="form-control col-md-7 col-xs-12 simditor"></textarea>
                                             </div>
                                         </div>
                                         <?break;
@@ -259,12 +261,31 @@
 
 <script src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 
-<script src="/bower_components/ckeditor/ckeditor.js"></script>
+<script type="text/javascript" src="/bower_components/simple-module/lib/module.js"></script>
+<script type="text/javascript" src="/bower_components/simple-uploader/lib/uploader.js"></script>
+<script type="text/javascript" src="/bower_components/simple-hotkeys/lib/hotkeys.js"></script>
+<script type="text/javascript" src="/bower_components/simditor/lib/simditor.js"></script>
 
 <script src="/js/thewbb_alert.js"></script>
 <script>
     Dropzone.autoDiscover = false;
     $(".datetime").datetimepicker({format:'YYYY-MM-DD HH:mm', locale:'zh-cn'});
+
+
+    var editor, toolbar;
+    Simditor.locale = 'zh-CN';
+    toolbar = ['title', 'bold', 'italic', 'underline', 'strikethrough', 'fontScale', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent', 'alignment'];
+
+    editor = new Simditor({
+        textarea: $('.simditor'),
+        placeholder: '这里输入文字...',
+        toolbar: toolbar,
+        pasteImage: true,
+        defaultImage: '/img/logo.png',
+        upload: {
+            url: '/file/simditorUpload'
+        }
+    });
 
     $(".dropzone").each(function(){
         var id = $(this).attr("id");

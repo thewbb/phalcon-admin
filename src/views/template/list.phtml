@@ -174,7 +174,7 @@
                                                     // 当设置参数时，将设置好的参数名称和参数值拼接到url后面
                                                     $url = empty($field["href"])?$row[$key]:$field["href"].(empty($urlParams)?'':'?'.implode("&", $urlParams));
                                                     // 默认显示设置的data，如果没有设置data，则显示数据库中存储的值
-                                                    echo '<a style="text-decoration:underline;" href="'.$url.'" >'.(empty($field["data"])?$row[$key]:$field["data"]).'</a>';
+                                                    echo '<a style="text-decoration:underline;" href="'.$url.'" target="_blank" >'.(empty($field["data"])?$row[$key]:$field["data"]).'</a>';
                                                     break;
                                                 case "money":
                                                     echo number_format($row[$key], 2).'元';

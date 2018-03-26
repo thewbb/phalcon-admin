@@ -69,6 +69,15 @@
                                         case "select":
                                             echo "<td>{$value["options"][$value["data"]]}</td>";
                                             break;
+                                        case "boolean":
+                                            if($value["data"] == 1){
+                                                echo "<td>是</td>";
+                                            }
+                                            else{
+                                                echo "<td>否</td>";
+                                            }
+
+                                            break;
                                         default:
                                             echo "<td>{$value["data"]}</td>";
                                     }
