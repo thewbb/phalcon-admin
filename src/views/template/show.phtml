@@ -67,7 +67,7 @@
                                          <th style="width:30%">'.$value["label"].'</th>';
                                     switch($value["type"]){
                                         case "select":
-                                            echo "<td>{$value["options"][$value["data"]]}</td>";
+                                            echo "<td>".$value["options"][$value["data"]]."</td>";
                                             break;
                                         case "boolean":
                                             if($value["data"] == 1){
@@ -79,7 +79,7 @@
 
                                             break;
                                         default:
-                                            echo "<td>{$value["data"]}</td>";
+                                            echo "<td>".$value["data"]."</td>";
                                     }
                                     echo '</tr>';
                                 }

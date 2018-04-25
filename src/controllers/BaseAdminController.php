@@ -202,6 +202,7 @@ class BaseAdminController extends ControllerBase
             }
         }
         else{
+
             foreach($fields as $key => &$value){
                 switch($value["type"]){
                     case "many_to_one":
@@ -215,8 +216,14 @@ class BaseAdminController extends ControllerBase
                     case "one_to_many":
                         // 从对应的表中取值
                         // 将选出的数据变成一个html的table，然后输出
-                        $sql = "select ".implode(",", array_keys($value["columns"]))." from $key where {$value["refer"]} = '{$record[$value["field"]]}'";
-                        $rows = $this->fetchAll($sql);
+                        if(is_null($value["rows"])){
+                            $sql = "select ".implode(",", array_keys($value["columns"]))." from $key where {$value["refer"]} = '{$record[$value["field"]]}'";
+                            $rows = $this->fetchAll($sql);
+                        }
+                        else{
+                            $rows = $value["rows"];
+                        }
+
                         $showData = "";
                         $showData .= "<table style='border: 1px solid #efefef;'>";
                         $showData .= "<tr style='border: 1px solid #efefef;'>";
@@ -225,10 +232,11 @@ class BaseAdminController extends ControllerBase
                         }
 
                         $showData .= "</tr>";
+
                         foreach($rows as $row){
                             $showData .= "<tr>";
-                            foreach($row as $row_field){
-                                $showData .= "<td style='min-width:100px;text-align: center;border: 1px solid #efefef;padding: 4px;'>".$row_field."</td>";
+                            foreach($value["columns"] as $key => $row_field_name){
+                                $showData .= "<td style='min-width:100px;text-align: center;border: 1px solid #efefef;padding: 4px;'>".$row[$key]."</td>";
                             }
                             $showData .= "</tr>";
                         }
