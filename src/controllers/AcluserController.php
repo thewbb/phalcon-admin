@@ -463,7 +463,7 @@ class AcluserController extends BaseAdminController
         ];
 
         $sqlCount = "select count(*) from acl_user where 1";
-        $sqlMain = "select * from (select a.*, GROUP_CONCAT(c.name) as group_name from acl_user as a left join acl_group_has_user as b on a.id = b.user_id left join acl_group as c on b.group_id = c.id group by a.id) as a where 1";
+        $sqlMain = "select * from (select a.*, GROUP_CONCAT(c.name) as group_name from acl_user as a left join acl_group_has_user as b on a.id = b.user_id left join acl_group as c on b.group_id = c.id group by a.id) as acl_user where 1";
 
         parent::listAction($search_fields, $fields, $sqlCount, $sqlMain);
     }

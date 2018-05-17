@@ -196,13 +196,13 @@ class BaseAdminController extends ControllerBase
         $id = $this->getQuery("id");
         $sql = "select * from $this->tableName where id = $id";
         $record = $this->fetchOne($sql);
+
         if(empty($fields)){
             foreach($record as $key => $value){
                 $fields[$key] = ['label' => $key, 'data' => $value];
             }
         }
         else{
-
             foreach($fields as $key => &$value){
                 switch($value["type"]){
                     case "many_to_one":
@@ -210,7 +210,7 @@ class BaseAdminController extends ControllerBase
                         // 从字段中取出表名和字段名
                         list($table_name, $field_name) = explode(".", $key);
                         $sql = "select * from $table_name where {$value["refer"]} = '{$record[$value["field"]]}'";
-                        $row = $this->fetchOne($sql, 1000);
+                        $row = $this->fetchOne($sql);
                         $value["data"] = $row[$field_name];
                         break;
                     case "one_to_many":
@@ -548,7 +548,18 @@ class BaseAdminController extends ControllerBase
         for($i = 0; $i < count($records); $i++){
             $column = "A";
             foreach($fields as $key => $value){
-                $sheet->setCellValue($column++.($i+2), $records[$i][str_replace(".", "__", $key)]);
+                switch($value["type"]){
+                    case "boolean":
+                        if($records[$i][str_replace(".", "__", $key)] == 0){
+                            $sheet->setCellValue($column++.($i+2), "no");
+                        }
+                        else{
+                            $sheet->setCellValue($column++.($i+2), "yes");
+                        }
+                        break;
+                    default:
+                        $sheet->setCellValue($column++.($i+2), $records[$i][str_replace(".", "__", $key)]);
+                }
             }
         }
 

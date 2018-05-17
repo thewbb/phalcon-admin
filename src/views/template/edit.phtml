@@ -23,13 +23,9 @@
     <link href="/bower_components/gentelella/build/css/custom.min.css" rel="stylesheet">
     <!-- Dropzone.js -->
     <link href="/bower_components/gentelella/vendors/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
-
     <link href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
-
     <link media="all" rel="stylesheet" type="text/css" href="/bower_components/simditor/styles/simditor.css" />
-
     <link href="/css/thewbb.css" rel="stylesheet">
-
     <script src="https://cdn.bootcss.com/vue/2.5.13/vue.js"></script>
 </head>
 
@@ -300,17 +296,19 @@
     var editor, toolbar;
     Simditor.locale = 'zh-CN';
     toolbar = ['title', 'bold', 'italic', 'underline', 'strikethrough', 'fontScale', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent', 'alignment'];
+    if($('.simditor').length > 0){
+        editor = new Simditor({
+            textarea: $('.simditor'),
+            placeholder: '这里输入文字...',
+            toolbar: toolbar,
+            pasteImage: true,
+            defaultImage: '/img/logo.png',
+            upload: {
+                url: '/file/simditorUpload'
+            }
+        });
+    }
 
-    editor = new Simditor({
-        textarea: $('.simditor'),
-        placeholder: '这里输入文字...',
-        toolbar: toolbar,
-        pasteImage: true,
-        defaultImage: '/img/logo.png',
-        upload: {
-            url: '/file/simditorUpload'
-        }
-    });
 
 
     $(".dropzone").each(function(){
