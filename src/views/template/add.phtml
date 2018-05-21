@@ -207,19 +207,6 @@
                                                 <textarea type="text" id="post-<?echo $key?>" <?echo $field["readonly"]?"readonly":""?> name="post-<?echo $key?>" value="" required="required" class="form-control col-md-7 col-xs-12 simditor"></textarea>
                                             </div>
                                         </div>
-                                        <script>
-                                            editor = new Simditor({
-                                                textarea: $(".simditor"),
-                                                placeholder: '这里输入文字...',
-                                                toolbar: toolbar,
-                                                pasteImage: true,
-                                                defaultImage: '/img/logo.png',
-                                                upload: {
-                                                    url: '/file/simditorUpload'
-                                                }
-                                            });
-                                        </script>
-
                                         <?break;
                                     case "hidden":?>
                                         <input type="hidden" id="post-<?echo $key?>" name="post-<?echo $key?>" value="<?echo empty($_POST["post-$key"])? $field['data']:$_POST["post-$key"]?>"
@@ -291,19 +278,18 @@
     Simditor.locale = 'zh-CN';
     toolbar = ['title', 'bold', 'italic', 'underline', 'strikethrough', 'fontScale', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent', 'alignment'];
 
-    /*
-    editor = new Simditor({
-        textarea: $(".simditor"),
-        placeholder: '这里输入文字...',
-        toolbar: toolbar,
-        pasteImage: true,
-        defaultImage: '/img/logo.png',
-        upload: {
-            url: '/file/simditorUpload'
-        }
-    });
-    */
-
+    if($(".simditor").length > 0) {
+        editor = new Simditor({
+            textarea: $(".simditor"),
+            placeholder: '这里输入文字...',
+            toolbar: toolbar,
+            pasteImage: true,
+            defaultImage: '/img/logo.png',
+            upload: {
+                url: '/file/simditorUpload'
+            }
+        });
+    }
 
     $(".dropzone").each(function(){
         var id = $(this).attr("id");
