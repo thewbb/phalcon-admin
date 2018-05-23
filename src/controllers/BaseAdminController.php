@@ -299,8 +299,14 @@ class BaseAdminController extends ControllerBase
                     }
 
                     if(isset($field["pre_post"])){
-                        // 提交前的修改参数，根据用户传递进来的函数参数，在提交到数据库里之前修改这个值
-                        $params[$key] = call_user_func([$this, $field["pre_post"]], $params[$key]);
+                        if($field["type"] == "one_to_many"){
+                            // 提交前的修改参数，根据用户传递进来的函数参数，在提交到数据库里之前修改这个值
+                            $itemParams = call_user_func([$this, $field["pre_post"]], $itemParams);
+                        }else{
+                            // 提交前的修改参数，根据用户传递进来的函数参数，在提交到数据库里之前修改这个值
+                            $params[$key] = call_user_func([$this, $field["pre_post"]], $params[$key]);
+                        }
+
                     }
                 }
             }
@@ -367,6 +373,14 @@ class BaseAdminController extends ControllerBase
 
             foreach($fields as $key => $field){
                 $param = $this->getPost("post-".str_replace(".", "_", $key));
+
+                //handle prepost here
+                //this is the json representation
+                if(isset($field["pre_post"])){
+                    // 提交前的修改参数，根据用户传递进来的函数参数，在提交到数据库里之前修改这个值
+                    $param = call_user_func([$this, $field["pre_post"]], $param);
+                }
+
 
                 switch($field["type"]){
                     case "many_to_one":
@@ -483,6 +497,13 @@ class BaseAdminController extends ControllerBase
                         break;
                     default:
                         $field["data"] = $record[$key];
+                }
+
+                //handle predisplay
+                if(isset($field["pre_display"])){
+                    // 提交前的修改参数，根据用户传递进来的函数参数，在显示到phtml之前修改这个值
+                    $field["data"] = call_user_func([$this, $field["pre_display"]], $field["data"]);
+
                 }
             }
         }
