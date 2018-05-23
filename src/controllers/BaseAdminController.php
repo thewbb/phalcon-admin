@@ -574,16 +574,28 @@ class BaseAdminController extends ControllerBase
     }
 
     public function batchAction($actions = null){
-        if($actions == null){
-            $actions = [
-                "remove" => ['label' => "批量删除", 'title' => '确认删除', 'message' => '确定要删除这些记录吗？'],
-                "group" => ['label' => "分组", 'title' => '确认删除', 'message' => '确定要删除这些记录吗？'],
-            ];
+        $operation = $this->getPost("batch-operation");
+        $tableRecords = $_POST["table_records"];
+        $url = $this->session->get("HTTP_REFERER");
+
+        if(empty($tableRecords)){
+            $this->returnError("没有可以操作的数据");
         }
 
-        print_r($_POST);
+        switch($operation){
+            case "remove":
+                $rowCount = 0;
+                foreach($tableRecords as $key => $value){
+                    $sql = "delete from $this->tableName where id = $value";
+                    $result = $this->execute($sql);
+                    $rowCount += $result;
+                }
+                $this->flashSession->success("成功删除 $rowCount 条数据！");
+                break;
+            default:
 
-        echo "batchAction";exit();
+        }
+        header("location:$url");
     }
 
     public function headerTemplate($params = [], $template = null){
