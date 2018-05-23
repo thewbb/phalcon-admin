@@ -276,17 +276,19 @@
     Simditor.locale = 'zh-CN';
     toolbar = ['title', 'bold', 'italic', 'underline', 'strikethrough', 'fontScale', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent', 'alignment'];
 
-    editor = new Simditor({
-        textarea: $('.simditor'),
-        placeholder: '这里输入文字...',
-        toolbar: toolbar,
-        pasteImage: true,
-        defaultImage: '/img/logo.png',
-        upload: {
-            url: '/file/simditorUpload'
-        }
-    });
-
+    if($(".simditor").length > 0) {
+        editor = new Simditor({
+            textarea: $(".simditor"),
+            placeholder: '这里输入文字...',
+            toolbar: toolbar,
+            pasteImage: true,
+            defaultImage: '/img/logo.png',
+            upload: {
+                url: '/file/simditorUpload'
+            }
+        });
+    }
+    
     $(".dropzone").each(function(){
         var id = $(this).attr("id");
         $(this).dropzone({
