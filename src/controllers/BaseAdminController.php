@@ -125,6 +125,14 @@ class BaseAdminController extends ControllerBase
             }
         }
 
+        //only fetch the information related to this company
+        //according to which company the login user belongs
+        if(!empty($this->company_id)){
+            $user = $this->getLoginUser();
+            $company_id = $user["company_id"];
+            $where.=" and $this->tableName.$this->company_id = $company_id";
+        }
+
         // 如果listAction没有设置sqlCount语句，那么使用默认sqlCount语句来计算数据条数
         if(empty($sqlCount)){
             $sqlCount = "select count(*) from $this->tableName $leftJoin where 1 ";
@@ -169,6 +177,9 @@ class BaseAdminController extends ControllerBase
                 "remove" => ['label' => "批量删除", 'title' => '确认删除', 'message' => '确定要删除这些记录吗？', 'class' => 'btn-danger btn-need-confirm'],
             ];
         }
+
+        //print_r($batchActions);
+        //exit();
 
         $this->view->pick($template);
         $this->view->setVars(array(
@@ -285,10 +296,18 @@ class BaseAdminController extends ControllerBase
                                 foreach($field["columns"] as $field_key => $field_value){
                                     if($item_value[$field_key] != ""){
                                         $itemParam[$field_key] = $item_value[$field_key];
+
+                                        //add company id to each entry
+                                        $user = $this->getLoginUser();
+                                        if(!empty($this->company_id)){
+                                            $itemParam[$this->company_id] = $user["company_id"];
+                                        }
                                     }
                                 }
                                 // 将需要插入到关联表的数据放在数组中，等待数据插入后，生成好id，再将对应的数据插入到关联表中
                                 $itemParams[] = ["table_name" => $key, "refer" => $field["refer"], "data" => $itemParam];
+                                //print_r($itemParams);
+                                //exit();
                             }
                             break;
                         case "boolean":
@@ -313,6 +332,11 @@ class BaseAdminController extends ControllerBase
             $user = $this->getLoginUser();
             if(!empty($this->field_operator)){
                 $params[$this->field_operator] = $user["id"];
+            }
+
+            //company related
+            if(!empty($this->company_id)){
+                $params[$this->company_id] = $user["company_id"];
             }
 
             foreach($params as $key => $value){
@@ -418,6 +442,12 @@ class BaseAdminController extends ControllerBase
 
                             // id为空，说明这条是新加的，做插入操作
                             if(empty($itemParam[$field["field"]])){
+                                //add company id to the newly added entry
+                                $user = $this->getLoginUser();
+                                if(!empty($this->company_id)){
+                                    $itemParam[$this->company_id] = $user["company_id"];
+                                }
+
                                 $effectRow += $this->insert($key, $itemParam);
                             }
                             else{
@@ -455,8 +485,18 @@ class BaseAdminController extends ControllerBase
                 $params[$this->field_operator] = $user["id"];
             }
 
+            //company related
+            //print_r("edit company id");
+            //exit();
+            if(!empty($this->company_id)){
+                $params[$this->company_id] = $user["company_id"];
+                //print_r($params);
+                //exit();
+            }
+
+
             $effectRow += $this->update($this->tableName, $params, "id = $id");
-            if($effectRow <= 0){
+            if($effectRow < 0){
                 // 更新失败，提示错误信息
 
             }
@@ -599,6 +639,10 @@ class BaseAdminController extends ControllerBase
         $tableRecords = $_POST["table_records"];
         $url = $this->session->get("HTTP_REFERER");
 
+        //print_r($tableRecords);
+        //print_r($operation);
+        //exit();
+
         if(empty($tableRecords)){
             $this->returnError("没有可以操作的数据");
         }
@@ -613,7 +657,11 @@ class BaseAdminController extends ControllerBase
                 }
                 $this->flashSession->success("成功删除 $rowCount 条数据！");
                 break;
+            //case "invoice":
+
             default:
+                //print_r("default");
+                //exit();
 
         }
         header("location:$url");
