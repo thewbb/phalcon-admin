@@ -732,6 +732,11 @@ class BaseAdminController extends ControllerBase
         $params["groups"] = $groups;
         $params["user"] = $user;
 
+        //get user's company name as title
+        $company_id = $user["company_id"];
+        $sql = "select short_name from company where id = $company_id";
+        $params["company_name"] = $this->fetchColumn($sql);
+
         $view = new \Phalcon\Mvc\View\Simple();
 
         return $view->render($template, $params);
