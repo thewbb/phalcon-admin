@@ -33,334 +33,337 @@
 
 <body class="nav-md" style="background-color: #F7F7F7;">
 <div class="container body">
-    <div class="main_container">
-    <?
-    if($_GET["model"] == 1){
-        $marginLeft = "margin-left:0;";
-    }
-    else{
-        echo $current->sidebarTemplate();
-        echo $current->headerTemplate();
-    }
-    ?>
-        <!-- page content -->
-        <div class="right_col" style="<?echo $marginLeft?>" role="main">
-            <div class="col-md-10 col-sm-10 col-xs-12"  style="padding-left: 0;">
-                <div class="x_panel">
-                    <div class="x_title">
-                        <h2>列表<small></small>&nbsp;&nbsp;&nbsp;</h2>
-                        <div style="width: 2px; height: 30px; background-color: #00243F;float: left;"></div>&nbsp;
-                        <a href="/<?echo $current->controller?>/add" class="btn btn-primary btn-sm"><i class='fa fa-plus'></i>&nbsp;添加</a>
+<div class="main_container">
+<?
+if($_GET["model"] == 1){
+    $marginLeft = "margin-left:0;";
+}
+else{
+    echo $current->sidebarTemplate();
+    echo $current->headerTemplate();
+}
+?>
+<!-- page content -->
+<div class="right_col" style="<?echo $marginLeft?>" role="main">
+<div class="col-md-10 col-sm-10 col-xs-12"  style="padding-left: 0;">
+<div class="x_panel">
+<div class="x_title">
+    <h2>列表<small></small>&nbsp;&nbsp;&nbsp;</h2>
+    <div style="width: 2px; height: 30px; background-color: #00243F;float: left;"></div>&nbsp;
+    <a href="/<?echo $current->controller?>/add" class="btn btn-primary btn-sm"><i class='fa fa-plus'></i>&nbsp;添加</a>
 
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="x_content">
-                        <form id="main_form" action="/<?echo $current->controller?>/batch" method="post">
-                            <div class="table-responsive">
-                            <table class="table table-striped jambo_table bulk_action">
-                                <thead>
-                                <tr class="headings">
-                                    <th>
-                                        <input type="checkbox" id="check-all" class="flat">
-                                    </th>
-                                    <?
-                                    $url = "/$current->controller/$current->action?per_page=$perPage&page=$page".$searchParam;
-                                    foreach($fields as $key => $field){
-                                        switch($field['type']){
-                                            case "actions":
-                                                echo '<th class="column-title" style="text-align:center;">'.$field["label"].'</th>';
-                                                break;
-                                            default:
+    <div class="clearfix"></div>
+</div>
+<div class="x_content">
+<form id="main_form" action="/<?echo $current->controller?>/batch" method="post">
+<div class="table-responsive">
+<table class="table table-striped jambo_table bulk_action">
+    <thead>
+    <tr class="headings">
+        <th>
+            <input type="checkbox" id="check-all" class="flat">
+        </th>
+        <?
+        $url = "/$current->controller/$current->action?per_page=$perPage&page=$page".$searchParam;
+        foreach($fields as $key => $field){
+            switch($field['type']){
+                case "actions":
+                    echo '<th class="column-title" style="text-align:center;">'.$field["label"].'</th>';
+                    break;
+                default:
 
-                                                if($sortBy == $key){
-                                                    if($sortOrder == "asc"){
+                    if($sortBy == $key){
+                        if($sortOrder == "asc"){
 
-                                                        echo '<th class="column-title" style="text-align:center;"><a href="'.$url."&sort_by={$key}&sort_order=desc".'"  style="color:#ECF0F1;">'.$field["label"].'<i class="fa fa-sort-amount-asc"></i></a></th>';
-                                                    }
-                                                    else{
-                                                        echo '<th class="column-title" style="text-align:center;"><a href="'.$url."&sort_by={$key}&sort_order=asc".'" style="color:#ECF0F1;">'.$field["label"].'<i class="fa fa-sort-amount-desc"></i></a></th>';
-                                                    }
-                                                }
-                                                else{
-                                                    echo '<th class="column-title" style="text-align:center;"><a href="'.$url."&sort_by={$key}&sort_order=asc".'" style="color:#ECF0F1;">'.$field["label"].'</a></th>';
-                                                }
+                            echo '<th class="column-title" style="text-align:center;"><a href="'.$url."&sort_by={$key}&sort_order=desc".'"  style="color:#ECF0F1;">'.$field["label"].'<i class="fa fa-sort-amount-asc"></i></a></th>';
+                        }
+                        else{
+                            echo '<th class="column-title" style="text-align:center;"><a href="'.$url."&sort_by={$key}&sort_order=asc".'" style="color:#ECF0F1;">'.$field["label"].'<i class="fa fa-sort-amount-desc"></i></a></th>';
+                        }
+                    }
+                    else{
+                        echo '<th class="column-title" style="text-align:center;"><a href="'.$url."&sort_by={$key}&sort_order=asc".'" style="color:#ECF0F1;">'.$field["label"].'</a></th>';
+                    }
 
-                                        }
-                                    }
-                                    ?>
-                                    <th class="bulk-actions" colspan="12">
-                                        <a class="antoo" style="color:#fff; font-weight:500;">批量处理 ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
-                                        <?foreach($batchActions as $k => $v){?>
-                                            <button type="submit" id="batch-<?echo $k?>" class="btn <?echo $v["class"]?> btn-sm" style="margin-bottom: 0; margin-left: 8px; margin-right: 0px;" confirm-title="<?echo $v['title']?>" confirm-message="<?echo $v['message']?>"><?echo $v['label']?></button>
-                                        <?}?>
+            }
+        }
+        ?>
+        <th class="bulk-actions" colspan="12">
+            <a class="antoo" style="color:#fff; font-weight:500;">批量处理 ( <span class="action-cnt"> </span> ) <i class="fa fa-chevron-down"></i></a>
+            <?foreach($batchActions as $k => $v){?>
+                <button type="submit" id="batch-<?echo $k?>" class="btn <?echo $v["class"]?> btn-sm" style="margin-bottom: 0; margin-left: 8px; margin-right: 0px;" confirm-title="<?echo $v['title']?>" confirm-message="<?echo $v['message']?>" value="<?echo $k?>">
+                    <?echo $v['label']?>
+                </button>
+            <?}?>
+            <input name="batch-operation" id="batch-operation" type="hidden">
 
-                                    </th>
-                                </tr>
-                                </thead>
+        </th>
+    </tr>
+    </thead>
 
-                                <tbody>
-                                <?for($i = 0; $i < count($list); $i++){ $row = $list[$i];?>
-                                    <tr class="<?echo $i % 2 == 0? "odd":"even" ?> pointer">
-                                        <td class="a-center">
-                                            <input type="checkbox" class="flat" name="table_records[]" value="<?echo $row['id']?>">
-                                        </td>
+    <tbody>
+    <?for($i = 0; $i < count($list); $i++){ $row = $list[$i];?>
+        <tr class="<?echo $i % 2 == 0? "odd":"even" ?> pointer">
+            <td class="a-center">
+                <input type="checkbox" class="flat" name="table_records[]" value="<?echo $row['id']?>">
+            </td>
 
-                                        <?
-                                        foreach($fields as $key => $field){
-                                            echo "<td style='text-align: center;max-width: 200px;'>";
-                                            if(!empty($field["link_field"])){
-                                                echo "<a href='{$row[$field["link_field"]]}'>";
-                                            }
-                                            switch($field['type']){
-                                                case "select":
-                                                    echo $field["options"][$row[$key]];
-                                                    break;
-                                                case "actions":
-                                                    if($_GET["model"] == 1){
-                                                        $selected_key = $row["id"];
-                                                        $selected_value = $row[$_GET["show"]];
-                                                        echo "<a class='btn btn-default btn-xs btn-select' href='$url' value='{$selected_key}-{$selected_value}'><i class='fa fa-hand-o-up'></i>&nbsp;选择</a>";
-                                                    }
-                                                    else{
-                                                        foreach($field["actions"] as $actionKey => $params){
-                                                            if(!empty($params["link_field"])){
-                                                                $url = $row[$params["link_field"]];
-                                                            }
-                                                            else{
-                                                                $url = "/$current->controller/$actionKey?id={$row["id"]}";
-                                                            }
-                                                            switch($actionKey){
-                                                                case "show";
-                                                                    echo "<a class='btn btn-primary btn-xs btn-show' href='$url'><i class='fa fa-folder'></i>&nbsp;{$params["label"]}</a>";
-                                                                    break;
-                                                                case "edit";
-                                                                    echo "<a class='btn btn-info btn-xs btn-edit' href='$url'><i class='fa fa-pencil''></i>&nbsp;{$params["label"]}</a>";
-                                                                    break;
-                                                                case "remove";
-                                                                    echo "<a class='btn btn-danger btn-xs btn-remove' href='$url'><i class='fa fa-trash-o'></i>&nbsp;{$params["label"]}</a>";
-                                                                    break;
-                                                                default:
-                                                                    $url = empty($params["url"])?$url:($params["url"].$row["id"]);
-                                                                    $class = empty($params["class"])?"btn-default":$params["class"];
-                                                                    echo "<a class='btn btn-xs $class' href='$url' confirm-title='{$params["confirm-title"]}' confirm-message='{$params["confirm-message"]}'><i class='glyphicon glyphicon-certificate'></i>&nbsp;{$params["label"]}</a>";
-                                                            }
-                                                        }
-                                                    }
-                                                    break;
-                                                case "boolean":
-                                                    if($field["editable"] == true){
-                                                        $checked = $row[$key] == 1?"checked":"";
-                                                        echo "<input type=\"checkbox\" style=\"visibility: hidden;\" class=\"js-switch\" id=\"post-$key\" $checked >";
-                                                    }
-                                                    else{
-                                                        if($row[$key] == 1){
-                                                            echo '<span class="label label-success">yes</span>';
-                                                        }
-                                                        else{
-                                                            echo '<span class="label label-danger">no</span>';
-                                                        }
-
-                                                    }
-                                                    break;
-                                                case "image":
-                                                    echo '<img src="'.$row[$key].'" style="width:150px;">';
-                                                    break;
-                                                case "url":
-                                                    $urlParams = [];
-                                                    foreach($field["params"] as $paramKey => $paramValue){
-                                                        $urlParams[] = $paramKey."=".$row[$paramValue];
-                                                    }
-                                                    // 自定义的href为空时，链接为数据库中存储的值
-                                                    // 当设置参数时，将设置好的参数名称和参数值拼接到url后面
-                                                    $url = empty($field["href"])?$row[$key]:$field["href"].(empty($urlParams)?'':'?'.implode("&", $urlParams));
-                                                    // 默认显示设置的data，如果没有设置data，则显示数据库中存储的值
-                                                    echo '<a style="text-decoration:underline;" href="'.$url.'" target="_blank" >'.(empty($field["data"])?$row[$key]:$field["data"]).'</a>';
-                                                    break;
-                                                case "money":
-                                                    echo number_format($row[$key], 2).'元';
-                                                    break;
-                                                case "num":
-                                                    echo number_format($row[$key]);
-                                                    break;
-                                                case "datetime":
-                                                    if(empty($field["format"])){
-                                                        echo $row[$key];
-                                                    }
-                                                    else{
-                                                        echo date($field["format"], strtotime($row[$key]));
-                                                    }
-                                                    break;
-                                                case "many_to_one":
-                                                    list($table_name, $table_field) = explode(".", $key);
-                                                    echo $row[$table_name."__".$table_field];
-                                                    break;
-                                                default:
-                                                    echo $row[$key];
-                                            }
-                                            if(!empty($field["link_field"])){
-                                                echo "</a>";
-                                            }
-                                            echo "</td>";
-                                        }
-                                        ?>
-                                    </tr>
-                                <?}?>
-                                </tbody>
-                            </table>
-                            <div>
-                                <div style="width: 20%;float: left;">
-                                    共：<?echo $recordCount?>条
-                                    &nbsp;
-                                    <?if($current->export){?>
-                                        <a href="<?echo "/".$current->controller."/export"?>" target="_blank" class="btn btn-primary btn-xs">导出</a>
-                                    <?}?>
-                                </div>
-                                <div style="width: 80%;float: left;visibility: <?echo $pageCount <= 1?"hidden":"inherit" ?>;">
-                                    <div class="dataTables_paginate paging_simple_numbers" id="datatable_paginate">
-                                        <ul class="pagination" style="margin-top: 0;">
-                                            <?
-                                            $showPageNum = 7;
-                                            $min = 1;
-                                            $max = $showPageNum;
-                                            if($pageCount <= $showPageNum){
-                                                // 显示全部页
-                                                $max = $pageCount;
-                                            }
-                                            else if($page < (floor($showPageNum / 2) + 1)){
-                                                $max = $showPageNum;
-                                            }
-                                            else if($page > $pageCount - floor($showPageNum / 2)){
-                                                $min = $pageCount - $showPageNum;
-                                                $max = $pageCount;
-                                            }
-                                            else{
-                                                $min = $page - floor($showPageNum / 2);
-                                                $max = $page + floor($showPageNum / 2);
-                                            }
-
-                                            $url = "/$current->controller/$current->action?per_page=$perPage&sort_by=$sortBy&sort_order=$sortOrder".$searchParam;
-                                            if($page == 1){
-                                                $previous = "";
-                                            }
-                                            else{
-                                                $previous = $url."&page=".($page - 1);
-                                            }
-
-                                            if($page == $pageCount){
-                                                $next = "";
-                                            }
-                                            else{
-                                                $next = $url."&page=".($page + 1);
-                                            }
-
-
-                                            ?>
-                                            <li class="paginate_button previous <?echo $page ==1?"disabled":""?>" id="datatable_previous">
-                                                <a href="<?echo $previous?>" aria-controls="datatable" data-dt-idx="<?echo $page - 1?>" tabindex="0">上一页</a>
-                                            </li>
-                                            <li>
-                                                <a href="<?echo $url."&page=1"?>" aria-controls="datatable" data-dt-idx="<?echo $page - 1?>" tabindex="0"><i class='fa fa-angle-double-left'></i></a>
-                                            </li>
-                                            <?for($i = $min; $i <= $max; $i++){?>
-                                                <li class="paginate_button <?echo $i == $page?"active":""?>">
-                                                    <a href="<?echo $url."&page=$i"?>" aria-controls="datatable" data-dt-idx="<?echo $i?>" tabindex="0"><?echo $i?></a>
-                                                </li>
-                                            <?}?>
-                                            <li>
-                                                <a href="<?echo $url."&page=$pageCount"?>" aria-controls="datatable" data-dt-idx="<?echo $page - 1?>" tabindex="0"><i class='fa fa-angle-double-right'></i></a>
-                                            </li>
-                                            <li class="paginate_button next <?echo $page == $pageCount?"disabled":""?>" id="datatable_next">
-                                                <a href="<?echo $next?>" aria-controls="datatable" data-dt-idx="<?echo $page + 1?>" tabindex="0">下一页</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-sm-2 col-xs-12"  style="padding-left: 0;padding-right: 0;">
-                <div class="x_panel">
-                    <div class="x_title">
-                        <h2>搜索<small></small></h2>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="x_content">
-                        <form action="" class="form-horizontal form-label-left" method="get">
-                            <?foreach($searchFields as $key => $field){
-                                switch($field['type']){
-                                case 'select':?>
-                                    <div class="form-group">
-                                        <?echo $field['label']?>
-                                        <select class="form-control col-md-7 col-xs-12" name="search_<?echo $key?>">
-                                            <option value="">全部</option>
-                                            <?foreach($field["options"] as $key => $option){?>
-                                                <option value="<?echo $key?>" <?echo $field["data"] === strval($key)?"selected":""?>><?echo $option?></option>
-                                            <?}?>
-                                        </select>
-                                    </div>
-                                    <?break;
-                                    case 'boolean':?>
-                                        <div class="form-group">
-                                            <table style="width: 100%">
-                                                <tr>
-                                                    <td style="width: 70%;"><?echo $field['label']?></td>
-                                                    <td style="width: 30%;text-align: right;"><input type="checkbox" class="js-switch" name="search_<?echo $key?>" <?echo empty( $field['data'])?"":"checked"?> value="1"></td>
-                                                </tr>
-                                            </table>
-
-
-                                        </div>
-                                        <?break;
-                                case 'datetime_range':?>
-                                    <div class="form-group">
-                                        <?echo $field['label']?>开始时间
-                                        <input type="text" name="search_<?echo $key?>_begin" id="search_<?echo $key?>_begin" class="form-control datetime" value="<?echo $field['datetime_begin']?>"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <?echo $field['label']?>结束时间
-                                        <input type="text" name="search_<?echo $key?>_end" id="search_<?echo $key?>_end" class="form-control datetime" value="<?echo $field['datetime_end']?>" />
-                                    </div>
-                                    <?break;
-                                    case 'date_range':?>
-                                        <div class="form-group">
-                                            <?echo $field['label']?>开始时间
-                                            <input type="text" name="search_<?echo $key?>_begin" id="search_<?echo $key?>_begin" class="form-control dateonly" value="<?echo $field['datetime_begin']?>"/>
-                                        </div>
-                                        <div class="form-group">
-                                            <?echo $field['label']?>结束时间
-                                            <input type="text" name="search_<?echo $key?>_end" id="search_<?echo $key?>_end" class="form-control dateonly" value="<?echo $field['datetime_end']?>" />
-                                        </div>
-                                        <?break;
+            <?
+            foreach($fields as $key => $field){
+                echo "<td style='text-align: center;max-width: 200px;'>";
+                if(!empty($field["link_field"])){
+                    echo "<a href='{$row[$field["link_field"]]}'>";
+                }
+                switch($field['type']){
+                    case "select":
+                        echo $field["options"][$row[$key]];
+                        break;
+                    case "actions":
+                        if($_GET["model"] == 1){
+                            $selected_key = $row["id"];
+                            $selected_value = $row[$_GET["show"]];
+                            echo "<a class='btn btn-default btn-xs btn-select' href='$url' value='{$selected_key}-{$selected_value}'><i class='fa fa-hand-o-up'></i>&nbsp;选择</a>";
+                        }
+                        else{
+                            foreach($field["actions"] as $actionKey => $params){
+                                if(!empty($params["link_field"])){
+                                    $url = $row[$params["link_field"]];
+                                }
+                                else{
+                                    $url = "/$current->controller/$actionKey?id={$row["id"]}";
+                                }
+                                switch($actionKey){
+                                    case "show";
+                                        echo "<a class='btn btn-primary btn-xs btn-show' href='$url'><i class='fa fa-folder'></i>&nbsp;{$params["label"]}</a>";
+                                        break;
+                                    case "edit";
+                                        echo "<a class='btn btn-info btn-xs btn-edit' href='$url'><i class='fa fa-pencil''></i>&nbsp;{$params["label"]}</a>";
+                                        break;
+                                    case "remove";
+                                        echo "<a class='btn btn-danger btn-xs btn-remove' href='$url'><i class='fa fa-trash-o'></i>&nbsp;{$params["label"]}</a>";
+                                        break;
                                     default:
-                                        echo '
+                                        $url = empty($params["url"])?$url:($params["url"].$row["id"]);
+                                        $class = empty($params["class"])?"btn-default":$params["class"];
+                                        echo "<a class='btn btn-xs $class' href='$url' confirm-title='{$params["confirm-title"]}' confirm-message='{$params["confirm-message"]}'><i class='glyphicon glyphicon-certificate'></i>&nbsp;{$params["label"]}</a>";
+                                }
+                            }
+                        }
+                        break;
+                    case "boolean":
+                        if($field["editable"] == true){
+                            $checked = $row[$key] == 1?"checked":"";
+                            echo "<input type=\"checkbox\" style=\"visibility: hidden;\" class=\"js-switch\" id=\"post-$key\" $checked >";
+                        }
+                        else{
+                            if($row[$key] == 1){
+                                echo '<span class="label label-success">yes</span>';
+                            }
+                            else{
+                                echo '<span class="label label-danger">no</span>';
+                            }
+
+                        }
+                        break;
+                    case "image":
+                        echo '<img src="'.$row[$key].'" style="width:150px;">';
+                        break;
+                    case "url":
+                        $urlParams = [];
+                        foreach($field["params"] as $paramKey => $paramValue){
+                            $urlParams[] = $paramKey."=".$row[$paramValue];
+                        }
+                        // 自定义的href为空时，链接为数据库中存储的值
+                        // 当设置参数时，将设置好的参数名称和参数值拼接到url后面
+                        $url = empty($field["href"])?$row[$key]:$field["href"].(empty($urlParams)?'':'?'.implode("&", $urlParams));
+                        // 默认显示设置的data，如果没有设置data，则显示数据库中存储的值
+                        echo '<a style="text-decoration:underline;" href="'.$url.'" target="_blank" >'.(empty($field["data"])?$row[$key]:$field["data"]).'</a>';
+                        break;
+                    case "money":
+                        echo number_format($row[$key], 2).'元';
+                        break;
+                    case "num":
+                        echo number_format($row[$key]);
+                        break;
+                    case "datetime":
+                        if(empty($field["format"])){
+                            echo $row[$key];
+                        }
+                        else{
+                            echo date($field["format"], strtotime($row[$key]));
+                        }
+                        break;
+                    case "many_to_one":
+                        list($table_name, $table_field) = explode(".", $key);
+                        echo $row[$table_name."__".$table_field];
+                        break;
+                    default:
+                        echo $row[$key];
+                }
+                if(!empty($field["link_field"])){
+                    echo "</a>";
+                }
+                echo "</td>";
+            }
+            ?>
+        </tr>
+    <?}?>
+    </tbody>
+</table>
+<div>
+    <div style="width: 20%;float: left;">
+        共：<?echo $recordCount?>条
+        &nbsp;
+        <?if($current->export){?>
+            <a href="<?echo "/".$current->controller."/export"?>" target="_blank" class="btn btn-primary btn-xs">导出</a>
+        <?}?>
+    </div>
+    <div style="width: 80%;float: left;visibility: <?echo $pageCount <= 1?"hidden":"inherit" ?>;">
+        <div class="dataTables_paginate paging_simple_numbers" id="datatable_paginate">
+            <ul class="pagination" style="margin-top: 0;">
+                <?
+                $showPageNum = 7;
+                $min = 1;
+                $max = $showPageNum;
+                if($pageCount <= $showPageNum){
+                    // 显示全部页
+                    $max = $pageCount;
+                }
+                else if($page < (floor($showPageNum / 2) + 1)){
+                    $max = $showPageNum;
+                }
+                else if($page > $pageCount - floor($showPageNum / 2)){
+                    $min = $pageCount - $showPageNum;
+                    $max = $pageCount;
+                }
+                else{
+                    $min = $page - floor($showPageNum / 2);
+                    $max = $page + floor($showPageNum / 2);
+                }
+
+                $url = "/$current->controller/$current->action?per_page=$perPage&sort_by=$sortBy&sort_order=$sortOrder".$searchParam;
+                if($page == 1){
+                    $previous = "";
+                }
+                else{
+                    $previous = $url."&page=".($page - 1);
+                }
+
+                if($page == $pageCount){
+                    $next = "";
+                }
+                else{
+                    $next = $url."&page=".($page + 1);
+                }
+
+
+                ?>
+                <li class="paginate_button previous <?echo $page ==1?"disabled":""?>" id="datatable_previous">
+                    <a href="<?echo $previous?>" aria-controls="datatable" data-dt-idx="<?echo $page - 1?>" tabindex="0">上一页</a>
+                </li>
+                <li>
+                    <a href="<?echo $url."&page=1"?>" aria-controls="datatable" data-dt-idx="<?echo $page - 1?>" tabindex="0"><i class='fa fa-angle-double-left'></i></a>
+                </li>
+                <?for($i = $min; $i <= $max; $i++){?>
+                    <li class="paginate_button <?echo $i == $page?"active":""?>">
+                        <a href="<?echo $url."&page=$i"?>" aria-controls="datatable" data-dt-idx="<?echo $i?>" tabindex="0"><?echo $i?></a>
+                    </li>
+                <?}?>
+                <li>
+                    <a href="<?echo $url."&page=$pageCount"?>" aria-controls="datatable" data-dt-idx="<?echo $page - 1?>" tabindex="0"><i class='fa fa-angle-double-right'></i></a>
+                </li>
+                <li class="paginate_button next <?echo $page == $pageCount?"disabled":""?>" id="datatable_next">
+                    <a href="<?echo $next?>" aria-controls="datatable" data-dt-idx="<?echo $page + 1?>" tabindex="0">下一页</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+</div>
+</form>
+</div>
+</div>
+</div>
+<div class="col-md-2 col-sm-2 col-xs-12"  style="padding-left: 0;padding-right: 0;">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>搜索<small></small></h2>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <form action="" class="form-horizontal form-label-left" method="get">
+                <?foreach($searchFields as $key => $field){
+                    switch($field['type']){
+                        case 'select':?>
+                            <div class="form-group">
+                                <?echo $field['label']?>
+                                <select class="form-control col-md-7 col-xs-12" name="search_<?echo $key?>">
+                                    <option value="">全部</option>
+                                    <?foreach($field["options"] as $key => $option){?>
+                                        <option value="<?echo $key?>" <?echo $field["data"] === strval($key)?"selected":""?>><?echo $option?></option>
+                                    <?}?>
+                                </select>
+                            </div>
+                            <?break;
+                        case 'boolean':?>
+                            <div class="form-group">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td style="width: 70%;"><?echo $field['label']?></td>
+                                        <td style="width: 30%;text-align: right;"><input type="checkbox" class="js-switch" name="search_<?echo $key?>" <?echo empty( $field['data'])?"":"checked"?> value="1"></td>
+                                    </tr>
+                                </table>
+
+
+                            </div>
+                            <?break;
+                        case 'datetime_range':?>
+                            <div class="form-group">
+                                <?echo $field['label']?>开始时间
+                                <input type="text" name="search_<?echo $key?>_begin" id="search_<?echo $key?>_begin" class="form-control datetime" value="<?echo $field['datetime_begin']?>"/>
+                            </div>
+                            <div class="form-group">
+                                <?echo $field['label']?>结束时间
+                                <input type="text" name="search_<?echo $key?>_end" id="search_<?echo $key?>_end" class="form-control datetime" value="<?echo $field['datetime_end']?>" />
+                            </div>
+                            <?break;
+                        case 'date_range':?>
+                            <div class="form-group">
+                                <?echo $field['label']?>开始时间
+                                <input type="text" name="search_<?echo $key?>_begin" id="search_<?echo $key?>_begin" class="form-control dateonly" value="<?echo $field['datetime_begin']?>"/>
+                            </div>
+                            <div class="form-group">
+                                <?echo $field['label']?>结束时间
+                                <input type="text" name="search_<?echo $key?>_end" id="search_<?echo $key?>_end" class="form-control dateonly" value="<?echo $field['datetime_end']?>" />
+                            </div>
+                            <?break;
+                        default:
+                            echo '
                                         <div class="form-group">
                                             '.$field['label'].'
                                                 <input type="text" name="search_'.$key.'" value="'.$field['data'].'" class="form-control col-md-7 col-xs-12">
                                         </div>
                                                 ';
-                                }
-                            }?>
-                            <div class="ln_solid"></div>
-                            <input type="hidden" name="model" value="<?echo $_GET["model"]?>">
-                            <input type="hidden" name="post-key" value="<?echo $_GET["key"]?>">
-                            <input type="hidden" name="post-data" value="<?echo $_GET["data"]?>">
-                            <div class="form-group" style="text-align: center;">
-                                <?if($_GET["model"] != 1){?>
-                                    <a href="<?echo "/$current->controller/$current->action"?>" class="btn btn-primary" type="reset">重置</a>
-                                <?}?>
-                                <button type="submit" class="btn btn-success">搜索</button>
-                            </div>
-                        </form>
-                    </div>
+                    }
+                }?>
+                <div class="ln_solid"></div>
+                <input type="hidden" name="model" value="<?echo $_GET["model"]?>">
+                <input type="hidden" name="post-key" value="<?echo $_GET["key"]?>">
+                <input type="hidden" name="post-data" value="<?echo $_GET["data"]?>">
+                <div class="form-group" style="text-align: center;">
+                    <?if($_GET["model"] != 1){?>
+                        <a href="<?echo "/$current->controller/$current->action"?>" class="btn btn-primary" type="reset">重置</a>
+                    <?}?>
+                    <button type="submit" class="btn btn-success">搜索</button>
                 </div>
-            </div>
+            </form>
         </div>
-        <!-- /page content -->
     </div>
+</div>
+</div>
+<!-- /page content -->
+</div>
 </div>
 <!-- jQuery -->
 <script src="/bower_components/gentelella/vendors/jquery/dist/jquery.min.js"></script>
@@ -399,6 +402,9 @@
 
         if(title == "" || title == null) title = '删除记录';
         if(message == "" || message == null) message = '确定要删除这条记录吗？';
+
+        var action = $(this).attr("value");
+        $("#batch-operation").attr("value", action);
 
         $.confirm({
             title: title,
