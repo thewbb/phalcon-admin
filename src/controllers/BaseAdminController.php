@@ -180,6 +180,8 @@ class BaseAdminController extends ControllerBase
 
         //print_r($batchActions);
         //exit();
+        //print_r($fields);
+        //exit();
 
         $this->view->pick($template);
         $this->view->setVars(array(
@@ -632,6 +634,28 @@ class BaseAdminController extends ControllerBase
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
         $objWriter->save('php://output');
         exit;
+    }
+
+
+    public function editnowAction(){
+        $id = $this->getPost("id");
+        $field = $this->getPost("field");
+        $value = $this->getPost("value");
+
+        //null check
+        if(empty($id) || empty($field) || empty($value)){
+            return;
+        }
+
+        $sql = "update $this->tableName set $field = '$value' where id = $id";
+        //print_r($sql);
+
+        $result = $this->execute($sql);
+
+        $response = array("result" => $result, "value" => $value);
+        print_r(json_encode($response));
+
+
     }
 
     public function batchAction($actions = null){

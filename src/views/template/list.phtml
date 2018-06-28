@@ -110,6 +110,8 @@ else{
 
             <?
             foreach($fields as $key => $field){
+                $id = $row['id'];
+
                 echo "<td style='text-align: center;max-width: 200px;'>";
                 if(!empty($field["link_field"])){
                     echo "<a href='{$row[$field["link_field"]]}'>";
@@ -198,7 +200,17 @@ else{
                         echo $row[$table_name."__".$table_field];
                         break;
                     default:
-                        echo $row[$key];
+
+                        echo "<span id='cell-$key-$id'>$row[$key]</span>";
+
+                        //create editable input for cell
+                        echo "<input id='input-$key-$id' hidden='true' value='$row[$key]'></input>";
+                        //add edit icon
+                        if($key != "id"){
+                            echo "&nbsp;&nbsp;<button class='btn btn-default btn-edit-now' style='padding-top: 0px; padding-bottom: 0px; padding-left: 2px; padding-right: 2px;' id='edit-$key-$id'>
+                                            <span class='glyphicon glyphicon-pencil' id='icon-$key-$id'></span>
+                                        </button>";
+                        }
                 }
                 if(!empty($field["link_field"])){
                     echo "</a>";
@@ -394,6 +406,7 @@ else{
     $(".dateonly").datetimepicker({format:'YYYY-MM-DD', locale:'zh-cn'});
     $(".btn-need-confirm").click(confirm);
     $(".btn-remove").click(confirm);
+    $(".btn-edit-now").click(edit);
 
     function confirm(){
         var url = $(this).attr("href");
@@ -434,6 +447,102 @@ else{
         });
         return false;
     }
+
+    /*
+     * modify db by directly editing the value of the field in list view.
+     */
+    function edit(){
+        /* get the corresponding html elements and attributes*/
+        var id = $(this).attr("id");
+        console.log(id);
+        var cell = "cell-"+id.substring(5);
+        var icon = "icon-"+id.substring(5);
+        var input = "input-"+id.substring(5);
+        var hidden = $("#"+input).attr("hidden");
+
+        /* get the field name and the id of the edited cell*/
+        var field = id.split("-")[1];
+        var row_id = id.split("-")[2];
+        /*
+         console.log(row_id);
+         console.log(field);
+         */
+
+
+        if(!hidden){
+            /*edit completed*/
+            /*confirm edition*/
+            $.confirm({
+                title: "确认修改",
+                content: "确定要修改这条记录吗？",
+                type: 'red',
+                buttons: {
+                    ok: {
+                        text: "确认",
+                        btnClass: 'btn-danger',
+                        keys: ['enter'],
+                        action: function(){
+                            /*submit change to backend, backend will handle db change*/
+                            /*this talks to the editnowAction in controller*/
+                            var url = "/<?echo $current->controller?>/editnow";
+                            /*console.log(url);*/
+                            $.ajax({
+                                type:"post",
+                                url:"/<?echo $current->controller?>/editnow",
+                                data:{
+                                    "id":row_id,
+                                    "field":field,
+                                    "value":$("#"+input).val()
+                                },
+                                dataType:"json",/*这里要注意如果后台返回的数据不是json格式，那么就会进入到error:function(data){}中*/
+
+                                success:function(data){
+                                    console.log(data);
+                                    if(data.result == 1){
+                                        $("#" + cell).html(data.value);
+                                        alert("修改成功");
+                                    }else if(data.result == 0){
+                                        alert("没有改动");
+                                    }else{
+                                        console.log(data);
+                                        alert("修改失败！");
+                                    }
+                                },
+                                error:function(data){
+                                    console.log(data);
+                                    alert("修改失败！");
+                                }
+                            });
+
+                            /*display the edited value, hide input box*/
+                            $("#"+cell).show();
+                            $("#"+icon).attr("class", "glyphicon glyphicon-pencil");
+                            $("#"+input).attr("hidden", true);
+                        }
+                    },
+                    cancel: {
+                        text:"取消",
+                        action:function(){
+                            /*display the old value, hide input box*/
+                            $("#"+cell).show();
+                            $("#"+icon).attr("class", "glyphicon glyphicon-pencil");
+                            $("#"+input).attr("hidden", true);
+                        }
+                    }
+                }
+            });
+
+
+        }else{
+            /*start edit*/
+            $("#"+input).attr("hidden", false);
+            $("#"+cell).hide();
+            $("#"+icon).attr("class", "glyphicon glyphicon-ok");
+        }
+
+        event.preventDefault();
+    }
+
 
     $(".btn-select").click(function(event){
         var values = $(this).attr("value").split("-");
