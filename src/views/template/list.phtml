@@ -216,7 +216,7 @@ else{
                             //config button
                             echo "<input hidden=true id='post-$key-$id-url' value='/$table_name/list?sort_order=asc&model=1'>";
                             $current_value = $row[$table_name."__".$table_field];
-                            echo "<input hidden=true id='post-$key-$id-data' value='$current_value'>";
+                            echo "<input readonly hidden=true id='post-$key-$id-data' value='$current_value'>";
                             echo "<input hidden=true id='post-$key-$id-show' value='$table_field'>";
                             $refer_value = $row[$field["field"]];
                             echo "<input hidden=true id='post-$key-$id' value = '$refer_value'>";
